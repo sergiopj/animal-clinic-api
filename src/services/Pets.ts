@@ -1,16 +1,17 @@
 'use strict';
-import { IPet, Pet } from '../database/models/pet.model';
-import { Sequelize } from 'sequelize';
+import { IPet, Pet } from '../database/models/pets/pet.model';
 import DbQueries from './DbQueries';
 import { Calculation } from './Calculation';
 
+
+// TODO esto llevar al sitio que toca
 /**
  * Function to get all pets
- * @returns {Promise<Pet[]>}
+ * @returns {Promise<IPet[]>}
  */
-const getAllPetsService = async (): Promise<Pet[]> => {
+const getAllPetsService = async (): Promise<IPet[]> => {
   try {    
-    const pets: Pet[] = await DbQueries.getAllElems();
+    const pets: IPet[] = await DbQueries.getAllElems();
     return pets.length > 0 
       ? pets 
       : [];
@@ -25,14 +26,14 @@ const getAllPetsService = async (): Promise<Pet[]> => {
 /**
  * Function to get a pet by id
  * @param id - pet id
- * @returns {Promise<Pet | null>}
+ * @returns {Promise<IPet | null>}
  */
-const getPetByIdService = async (id: number): Promise<Pet | null> => {
+const getPetByIdService = async (id: string): Promise<IPet | null> => {
   try {
-    const pet: Pet | null = await DbQueries.findElemById(id);
+    const pet: IPet | null = await DbQueries.findElemById(id);
     return pet
-      ? pet.dataValues
-      : {id: 0, name: '', species: '', gender: '', birthdate: ''};
+      ? pet
+      : null;
   } catch (error: unknown) {
     const message: string = error instanceof Error
         ? error.message 
@@ -43,17 +44,32 @@ const getPetByIdService = async (id: number): Promise<Pet | null> => {
 
 /**
  * Function to obtain the most numerous species
- * @returns {Promise<Pet | null>}
+ * @returns {Promise<any | null>}
  */
-const getMostNumerousSpeciesService = async (): Promise<Pet | null> => {
+const getMostNumerousSpeciesService = async (): Promise<any | null> => {
   try {
-    const querie = {
-      attributes: ['species', [Sequelize.fn('COUNT', Sequelize.col('species')), 'count']],
-      group: ['species'],
-      order: [[Sequelize.literal('count'), 'DESC']],
-    }
-    const pet: Pet | null = await DbQueries.findOneByQuerie(querie);
-    return pet;
+    const species = await Pet.aggregate([
+      {
+        $group: {
+          _id: '$species',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      },
+      {
+        $limit: 1
+      },
+      {
+        $project: {
+          _id: 0,
+          species: '$_id',
+          count: 1
+        }
+      }
+    ]);
+    return species.length > 0 ? species[0] : null;
   } catch (error: unknown) {
     const message: string = error instanceof Error
         ? error.message 
@@ -68,12 +84,8 @@ const getMostNumerousSpeciesService = async (): Promise<Pet | null> => {
  */
 const getSpeciesAverageAgeService = async (species: string): Promise<number> => {
   try {
-    const querie: object = {
-      where: {
-        species
-      }
-    };
-    const pets: Pet[] = await DbQueries.findElemsByQuerie(querie); 
+    const querie = { species };
+    const pets: IPet[] = await DbQueries.findElemsByQuerie(querie); 
     const averageAge: number = Calculation.calculateAverageAge(pets);   
     return averageAge;      
   } catch (error: unknown) {
@@ -88,14 +100,10 @@ const getSpeciesAverageAgeService = async (species: string): Promise<number> => 
  * Function to obtain the standar deviation among all pets
  * @returns {Promise<number>}
  */
-const getSpeciesStandarDeviationService = async (species: string): Promise<number> => {
+const getSpecieAgeStandarDeviationService = async (species: string): Promise<number> => {
   try {
-    const querie: object = {
-      where: {
-        species
-      }
-    };
-    const pets: Pet[] = await DbQueries.findElemsByQuerie(querie);
+    const querie = { species };
+    const pets: IPet[] = await DbQueries.findElemsByQuerie(querie);
     const standarDeviation: number = Calculation.calculateStandarDeviation(pets);    
     return standarDeviation;  
   } catch (error: unknown) {
@@ -109,16 +117,18 @@ const getSpeciesStandarDeviationService = async (species: string): Promise<numbe
 /**
  * Function to add a pet
  * @param data - Pet data to add
- * @returns {Promise<Pet>}
+ * @returns {Promise<IPet>}
  */
-const addNewPetService = async (data: IPet): Promise<Pet> => {
+const addNewPetService = async (data: Partial<IPet>): Promise<IPet> => {
   try {
-    const { species, gender } = data;
-    data.species = species?.toLocaleLowerCase();
-    data.gender = gender?.toLocaleLowerCase();
-    const result: Pet = await DbQueries.insertData(data);
-    delete result?.dataValues?.updatedAt;
-    delete result?.dataValues?.createdAt;
+    const { species, gender, name, birthdate } = data;
+    const pet = {
+      name,
+      species: species?.toLocaleLowerCase(),
+      gender: gender?.toLocaleLowerCase(),
+      birthdate,
+    }
+    const result: IPet = await DbQueries.insertData(pet);
     return result;
   } catch (error) {
     const message: string = error instanceof Error 
@@ -133,6 +143,6 @@ export {
   getPetByIdService,
   getMostNumerousSpeciesService,
   getSpeciesAverageAgeService,
-  getSpeciesStandarDeviationService,
+  getSpecieAgeStandarDeviationService,
   addNewPetService,
 };

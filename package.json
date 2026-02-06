@@ -1,24 +1,25 @@
 {
-  "name": "tech-demo-iskaypet",
+  "name": "animal-clinic-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend API for Animal Clinic",
   "main": "index.js",
   "scripts": {
     "build": "tsc",
     "start": "ts-node-dev --respawn ./src/server.ts",
     "start:dev": "ts-node-dev --respawn ./src/server.ts",
-    "test": "npx jest"
+    "test": "npx jest",
+    "seed": "ts-node ./src/scripts/seedRunner.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sergiopj/techDemo-iskaypet.git"
+    "url": "git+https://github.com/sergiopj/animal-clinic-backend.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/sergiopj/techDemo-iskaypet/issues"
+    "url": "https://github.com/sergiopj/animal-clinic-backend/issues"
   },
-  "homepage": "https://github.com/sergiopj/techDemo-iskaypet.git#readme",
+  "homepage": "https://github.com/sergiopj/animal-clinic-backend.git#readme",
   "dependencies": {
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
@@ -26,8 +27,9 @@
     "express": "^4.18.2",
     "express-validator": "^6.15.0",
     "log4js": "^6.8.0",
-    "sequelize": "^6.29.0",
-    "sqlite3": "^5.1.4"
+    "moment": "^2.30.1",
+    "mongoose": "^7.0.0",
+    "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",

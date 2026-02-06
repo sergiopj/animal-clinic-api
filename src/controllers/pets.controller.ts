@@ -1,116 +1,117 @@
 'use strict';
 import { Request, Response } from 'express';
-import { Pet } from '../database/models/pet.model';
+import { IPet } from '../database/models/pets/pet.model';
 import {
   getAllPetsService,
   getPetByIdService,
   getMostNumerousSpeciesService,
   getSpeciesAverageAgeService,
   addNewPetService,
-  getSpeciesStandarDeviationService,
+  getSpecieAgeStandarDeviationService,
 } from "../services/Pets";
 import { Logger } from '../services/Logger';
 const logger = Logger.getLogger('pets.controller');
 
 /**
   * Return all pets
-  * @param req 
-  * @param res 
-  * @returns {Pet[]}
+  * @param _req 
+  * @param _res 
+  * @returns {IPet[]}
 */
-const getAllPets = async (req: Request, res: Response) => {
+const getAllPets = async (_req: Request, _res: Response) => {
     try { 
-      const data: Pet[] = await getAllPetsService(); 
+      const data: IPet[] = await getAllPetsService(); 
       logger.info('::getAllPets | Start the process begins to obtaining all pets begins');
       data 
-          ? res.status(200).send({data, count: data.length})
-          : res.status(404).send({msg: 'All pets not found'});
+          ? _res.status(200).send({data, count: data.length})
+          : _res.status(404).send({msg: 'All pets not found'});
     } catch (error: unknown) {  
       logger.error(`::getAllPets | Error trying to get all pets - error : ${error}`);   
-      res.status(500).send({msg: 'Error trying to get all pets'});
+      _res.status(500).send({msg: 'Error trying to get all pets'});
     }
 };
   
 /**
  * Returns the data of a pet by its id
- * @param req 
- * @param res 
- * @returns {Pet}
+ * @param _req 
+ * @param _res 
+ * @returns {IPet}
  */
   
-const getPetById = async (req: Request, res: Response) => {
-    const { id } = req.params ;
+const getPetById = async (_req: Request, _res: Response) => {
+    const { id } = _req.params ;
     try {
-      const data: Pet | null = await getPetByIdService(parseInt(id));
+      const data: IPet | null = await getPetByIdService(id);
       logger.info(`::getPetById | Start the process begins to obtaining pet by id : ${id}`);
       data?.name 
-          ? res.status(200).send(data)
-          : res.status(404).send({msg: 'Pet not found'}); 
+          ? _res.status(200).send(data)
+          : _res.status(404).send({msg: 'Pet not found'}); 
     } catch (error) {     
       logger.error(`::getPetById | Error getting pet by id - error : ${error}`);
-      res.status(500).send({msg: `Error getting pet by id : ${id}`});
+      _res.status(500).send({msg: `Error getting pet by id : ${id}`});
     }
 };
 
+// TODO VER BIEN EL RETURNS
 /**
  * Returns the most numerous species
- * @param req 
- * @param res 
+ * @param _req 
+ * @param _res 
  * @returns {Json}
  */
   
-const getMostNumerousSpecies = async (req: Request, res: Response) => {
+const getMostNumerousSpecies = async (_req: Request, _res: Response) => {
   try {
-    const species: Pet | null = await getMostNumerousSpeciesService();
+    const species: any | null = await getMostNumerousSpeciesService();
     logger.info('::getMostNumerousSpecies | Start the process begins to obtain the most numerous species');
     species 
-        ? res.status(200).send(species)
-        : res.status(404).send({msg: 'Most numerous species not found'}); 
+        ? _res.status(200).send(species)
+        : _res.status(404).send({msg: 'Most numerous species not found'}); 
   } catch (error) {     
     logger.error(`::getMostNumerousSpecies | Error getting most numerous species - error : ${error}`);
-    res.status(500).send({msg: 'Error getting most numerous species'});
+    _res.status(500).send({msg: 'Error getting most numerous species'});
   }
 };
 
 /**
  * Returns species avegare age
- * @param req 
- * @param res 
+ * @param _req 
+ * @param _res 
  * @returns {Json}
  */
   
-const getSpeciesAverageAge = async (req: Request, res: Response) => {
+const getSpeciesAverageAge = async (_req: Request, _res: Response) => {
   try {
-    const { species_name } = req.query;
+    const { species_name } = _req.query;
     const speciesAverage: number = await getSpeciesAverageAgeService(String(species_name));
-    const standarDeviation: number = await getSpeciesStandarDeviationService(String(species_name));
+    const standarDeviation: number = await getSpecieAgeStandarDeviationService(String(species_name));
     logger.info('::getSpeciesAverageAge | Start the process begins to obtain the species average age');
     speciesAverage 
-        ? res.status(200).send({speciesAverage, standarDeviation})
-        : res.status(404).send({msg: 'Species average afe not found'}); 
+        ? _res.status(200).send({speciesAverage, standarDeviation})
+        : _res.status(404).send({msg: 'Species average afe not found'}); 
   } catch (error) {     
     logger.error(`::getSpeciesAverageAge | Error getting species average age - error : ${error}`);
-    res.status(500).send({msg: 'Error getting species average age'});
+    _res.status(500).send({msg: 'Error getting species average age'});
   }
 };
 
 /**
  * Add a new pet to the system
- * @param req 
- * @param res 
- * @returns {Pet}
+ * @param _req 
+ * @param _res 
+ * @returns {IPet}
  */
-const addNewPet = async (req: Request, res: Response) => {
+const addNewPet = async (_req: Request, _res: Response) => {
   try {
-    const data = req.body;
-    const result: Pet = await addNewPetService(data);
+    const data = _req.body;
+    const result: IPet = await addNewPetService(data);
     logger.info('::addNewPet | Start the process begins to insertion of a new pet');
     result 
-      ? res.status(201).send(result)
-      : res.status(404).send({msg: 'Could not add new pet'}); 
+      ? _res.status(201).send(result)
+      : _res.status(404).send({msg: 'Could not add new pet'}); 
   } catch (error) {
     logger.error(`::addNewPet | Error adding new pet - error : ${error}`);
-    res.status(500).send({msg: 'Error adding new pet'});
+    _res.status(500).send({msg: 'Error adding new pet'});
   }
 };
 
