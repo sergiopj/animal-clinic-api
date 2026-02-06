@@ -1,68 +1,119 @@
 
-# API REST Pets iskaypet
+# Animal Clinic Backend API
 
-API REST desarrollada en Node.js y TypeScript para la exposición de datos de mascotas para iskaypet
+REST API developed in Node.js and TypeScript to expose pet data for Animal Clinic.
+This application uses **MongoDB** as the database.
 
-## Levantar la Aplicación en entorno local:
+## Architecture
 
-Características a tener en cuenta si se quiere levantar la app en un entorno local:
+The project follows a layered architecture to ensure separation of concerns and maintainability.
 
-* Aplicación realizada en Node version - v14.21.2
-* Gestor de dependencias npm version - 6.14.17
+```mermaid
+graph TD
+    Client[Client / Frontend] -->|HTTP Requests| Router[Routes / API]
+    Router -->|Validation| Middleware[Middleware]
+    Middleware -->|Valid Request| Controller[Controllers]
+    Controller -->|Business Logic| Service[Services]
+    Service -->|Data Access| Model[Mongoose Models]
+    Model -->|Query| DB[(MongoDB)]
+```
 
-Comandos a ejecutar:
+*   **Routes**: Define the API endpoints and delegate requests to controllers.
+*   **Middleware**: Handles request validation (e.g., input checking).
+*   **Controllers**: Manage the HTTP request/response cycle.
+*   **Services**: Contain the core business logic and interact with the database layer.
+*   **Models**: Define the data structure (Schema) and interact with MongoDB.
+
+## Docker Containers
+
+The project uses Docker Compose to orchestrate the following services:
+
+*   **api**: The Node.js/Express backend application. Exposed on port `3000`.
+*   **mongo**: The MongoDB database instance. Exposed on port `27017`.
+
+## Database Seeding
+
+To facilitate development, the project includes a seeding script that populates the database with initial dummy data (50 pets). This ensures you have enough data to test endpoints like pagination, filtering, or statistics immediately.
+
+To run the seed:
+
+1.  Ensure the database is running (e.g., via `docker-compose up`).
+2.  Run the following command:
+
+```console
+npm run seed
+```
+
+*Note: This will clear existing pets and insert new random data.*
+
+## Running the Application locally:
+
+Features to keep in mind if you want to run the app in a local environment:
+
+* Application built with Node version - v14.21.2 (or higher)
+* Dependency manager npm version - 6.14.17 (or higher)
+* **MongoDB**: You must have a MongoDB instance running locally (default at `mongodb://localhost:27017/animalClinic`).
+
+Commands to execute:
 
 ```console
 npm i
 npm start
 ```
 
-## Levantar la Aplicación con docker:
+## Running the Application with Docker (Recommended):
 
-Requisitos previos si se quiere levantar la app en un contenedor docker:
+This is the easiest way, as it spins up both the API and the MongoDB database automatically.
 
-* Tener instalado docker-compose y docker.
+Prerequisites:
+* Have docker-compose and docker installed.
 
-Finalmente para levantar el contenedor docker, simplemente en la raiz del proyecto, ejecutar el comando:
+To start the containers, run in the project root:
 
 ```console
 docker-compose up --build
 ```
-_Nota: Si se quiere acceder al sistema de archivos del contenedor para verificar por ejemplo los logs o la creación de la db, se ha de ejecutar el siguiente comando:_
+
+This will start:
+1. The API at `http://localhost:3000`
+2. A MongoDB database on port `27017`
+
+_Note: If you want to access the container's file system to verify logs, for example, execute:_
 
 ```console
-docker exec -it docker_image_name /bin/bash
+docker exec -it api /bin/bash
 ```
 
-## Aplicación desplegada en un servidor público:
+## Application deployed on a public server:
 
-Url -- [Skypet-demo-api](https://api-iskaypetdem.onrender.com).
+Url -- [Animal-Clinic-api](https://api-animalclinic.onrender.com).
 
 ## Endpoints
 
-La API REST cuenta con los siguientes endpoints:
+The REST API has the following endpoints:
 
-* GET /pets - Obtiene todas las mascotas registradas.
+* `GET /pets` - Retrieves all registered pets.
 
-* GET /pets/:id - Obtiene la información de una mascota en particular, por el parámetro id.
+* `GET /pets/:id` - Retrieves information for a specific pet. **Note:** The `id` is now a MongoDB ObjectId (string).
 
-* GET /pets/species/most_numerous_species - Obtiene la especie de mascota más numerosa.
+* `GET /pets/species/most_numerous_species` - Retrieves the most numerous pet species.
 
-* GET /pets/species/average_age?species_name='example' - Obtiene la edad promedio de las mascotas de la especie requerida.
+* `GET /pets/species/average_age?species_name='example'` - Retrieves the average age of pets of the required species.
 
-* POST /pets - Registra una nueva mascota.
-    * name (string, requerido): Nombre de la mascota.
-    * species (string, requerido): Especie de la mascota.
-    * gender (string, requerido, debe ser "male" o "female"): Género de la mascota.
-    * birthdate (string, requerido, formato "YYYY-MM-DD"): Fecha de nacimiento de la mascota.   
+* `POST /pets` - Registers a new pet.
+    * `name` (string, required): Name of the pet.
+    * `species` (string, required): Species of the pet.
+    * `gender` (string, required, must be "male" or "female"): Gender of the pet.
+    * `birthdate` (string, required, format "YYYY-MM-DD"): Birthdate of the pet.   
 
-* SWAGGER_DOCS /api-docs para poder probar los endpoints
+* `GET /health` - Health check to verify the service is up.
 
-## Test unitarios
+* `GET /api-docs` - Swagger documentation to test the endpoints.
 
-Como lanzarlos de forma general:
+## Unit Tests
+
+To run the unit tests:
 
 ```console
 npm test
 ```
-

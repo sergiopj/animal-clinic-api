@@ -1,7 +1,7 @@
 'use strict';
 import moment from 'moment';
 import { configure, getLogger } from 'log4js';
-const loggerConfig = require('../config/logger');
+import loggerConfig from '../../config/logger.config.js';
 
 export class Logger {
 
@@ -37,4 +37,3 @@ export class Logger {
     });
   }
 }
-

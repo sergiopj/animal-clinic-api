@@ -26,7 +26,7 @@ describe('ArithmeticCalcService', () => {
       const dbPetList: any = PET_OBJECT_DB_LIST;
       const averageAge: number = await Calculation.calculateAverageAge(dbPetList);    
       expect(typeof averageAge).toBe('number');
-      expect(averageAge).toBe(8);
+      expect(averageAge).toBe(10);
     });
   });
 

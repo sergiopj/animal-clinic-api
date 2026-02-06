@@ -29,27 +29,28 @@ describe('getAllPets', () => {
   });
 });
 
+// TODO no mockear crear script de inserciond e datos etc
 describe('getPetById', () => {
   it('should return a pet object by id | status code 200', async () => {
     const mockData: any = PET_OBJECT;
     jest.spyOn(petsService, 'getPetByIdService').mockResolvedValue(mockData);
-    const response = await request(app).get('/pets/1');
+    const response = await request(app).get('/pets/641a2b3c4d5e6f7g8h9i0j1k');
     expect(response.status).toBe(200);
     expect(response.body).toEqual(mockData);
   });  
   it('should return a not found message | status code 404', async () => {
     const mockData: any = PET_OBJECT;
     jest.spyOn(petsService, 'getPetByIdService').mockResolvedValue(null);
-    const response = await request(app).get('/pets/999');
+    const response = await request(app).get('/pets/641a2b3c4d5e6f7g8h9i0j9z');
     expect(response.status).toBe(404);
     expect(response.body.msg).toEqual('Pet not found');
   });
   it('should return a error message with pet id | status code 500', async () => {
     const mockData: any = PET_OBJECT;
     jest.spyOn(petsService, 'getPetByIdService').mockRejectedValue(new Error('Force error'));
-    const response = await request(app).get('/pets/84');
+    const response = await request(app).get('/pets/641a2b3c4d5e6f7g8h9i0j8y');
     expect(response.status).toBe(500);
-    expect(response.body.msg).toEqual('Error getting pet by id : 84');
+    expect(response.body.msg).toEqual('Error getting pet by id : 641a2b3c4d5e6f7g8h9i0j8y');
   });   
 });
 
@@ -93,5 +94,13 @@ describe('Swagger api-docs', () => {
     expect(response.status).toBe(200);
     expect(response.type).toBe('text/html');
     expect(response.text.includes('<title>Swagger UI</title>')).toBe(true);
+  });
+});
+
+describe('Health Check', () => {
+  it('should return Ok | status code 200', async () => {
+    const response = await request(app).get('/health');
+    expect(response.status).toBe(200);
+    expect(response.text).toBe('Ok');
   });
 });

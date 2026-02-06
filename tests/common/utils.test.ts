@@ -1,5 +1,5 @@
-import { IPet } from '../../src/database/models/pet.model';
-import { IParamsValidator } from '../../src/database/models/responses.model';
+import { IPet } from '../../src/adapters/db/models/pet/pet.model';
+import { IParamsValidator } from '../../src/adapters/db/models/pet/responses.model';
 
 export const expectValidatorPetsObject = (pet: IPet) => {
   expect(pet).toHaveProperty('id');
@@ -40,4 +40,3 @@ export const expectValidatorMostNumObject = (average: any) => {
   expect(typeof count).toBe('number');
   expect(count).toBeGreaterThan(0)
 }
-  

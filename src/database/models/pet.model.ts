@@ -1,71 +1,90 @@
-'use strict';
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
+import sequelize from '../../config/database.js';
+import { PetSpecies } from './enums/pet-species.enum.js';
+import { PetGender } from './enums/pet-gender.enum.js';
 
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './src/database/database.sqlite',
-});
-
-// presentation layer interface
-export interface IPet {
-  id?: number;
+interface PetAttributes {
+  id: number;
   name: string;
-  species: string;
-  gender: string;
-  birthdate: string;
+  species: PetSpecies;
+  breed?: string;
+  gender: PetGender;
+  birthdate: Date;
+  weight?: number;
+  color?: string;
+  notes?: string;
+  isVaccinated?: boolean;
+  isSterilized?: boolean;
+  clinicId: number;
 }
 
-export interface IPetWithDataValues extends IPet {
-  dataValues: IPet
-}
+interface PetCreationAttributes extends Optional<PetAttributes, 'id'> {}
 
-
-// business layer class
-export class Pet extends Model {
-  public id!: number;
-  public name!: string;
-  public species!: string;
-  public gender!: string;
-  public birthdate!: Date;
+class Pet extends Model<PetAttributes, PetCreationAttributes> {
+  // No se declaran los campos públicos aquí
 }
 
 Pet.init(
   {
     id: {
       type: DataTypes.INTEGER,
-      primaryKey: true,
       autoIncrement: true,
-    },    
+      primaryKey: true,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     species: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM(...Object.values(PetSpecies)),
       allowNull: false,
     },
-    gender: {
+    breed: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    gender: {
+      type: DataTypes.ENUM(...Object.values(PetGender)),
       allowNull: false,
-      validate: {
-        isIn: [['male', 'female']]
-      }
     },
     birthdate: {
       type: DataTypes.DATE,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
     },
-    updatedAt: {
-      type: DataTypes.DATE,
+    weight: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    color: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    notes: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    isVaccinated: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    isSterilized: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    clinicId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: DataTypes.NOW,
+      references: {
+        model: 'clinics',
+        key: 'id',
+      },
     },
   },
   {
     sequelize,
-    modelName: 'Pet',
+    tableName: 'pets',
+    timestamps: true,
   }
 );
 
-
+export default Pet;

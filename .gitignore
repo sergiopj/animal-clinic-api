@@ -7,3 +7,6 @@ npm-debug.log
 .DS_Store
 build
 database.sqlite
+.env
+.idea
+coverage
