@@ -2,6 +2,8 @@
 import { IPet, Pet } from '../database/models/pet/pet.model';
 import DbQueries from './DbQueries';
 import { Calculation } from './Calculation';
+import { SpeciesEnum } from '../database/models/pet/enums/species.enum';
+import { GenderEnum } from '../database/models/pet/enums/gender.enum';
 
 
 // TODO esto llevar al sitio que toca
@@ -125,13 +127,18 @@ const getSpecieAgeStandarDeviationService = async (species: string): Promise<num
 const addNewPetService = async (data: Partial<IPet>): Promise<IPet> => {
   try {
     const { species, gender, name, birthdate } = data;
-    const pet = {
+    
+    // Convertir string a Enum si es necesario, o usar el valor directamente si ya es compatible
+    // Asumimos que data viene del controller y puede traer strings crudos
+    
+    const petData: Partial<IPet> = {
       name,
-      species: species?.toLocaleLowerCase(),
-      gender: gender?.toLocaleLowerCase(),
+      species: species as unknown as SpeciesEnum, // Forzamos el cast si viene como string
+      gender: gender as unknown as GenderEnum,
       birthdate,
-    }
-    const result: IPet = await DbQueries.insertData(pet);
+    };
+
+    const result: IPet = await DbQueries.insertData(petData);
     return result;
   } catch (error) {
     const message: string = error instanceof Error 
