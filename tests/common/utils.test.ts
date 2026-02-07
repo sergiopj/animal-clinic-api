@@ -1,5 +1,5 @@
-import { IPet } from '../../src/database/models/pets/pet.model';
-import { IParamsValidator } from '../../src/database/models/pets/responses.model';
+import { IPet } from '../../src/database/models/pet/pet.model';
+import { IParamsValidator } from '../../src/database/models/pet/responses.model';
 
 export const expectValidatorPetsObject = (pet: IPet) => {
   expect(pet).toHaveProperty('id');

@@ -1,4 +1,4 @@
-import { Pet } from '../../database/models/pets/pet.model';
+import { Pet } from '../../database/models/pet/pet.model';
 
 const speciesList = ['dog', 'cat', 'parrot', 'hamster', 'rabbit'];
 const genderList = ['male', 'female'];

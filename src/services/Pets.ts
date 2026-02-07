@@ -1,5 +1,5 @@
 'use strict';
-import { IPet, Pet } from '../database/models/pets/pet.model';
+import { IPet, Pet } from '../database/models/pet/pet.model';
 import DbQueries from './DbQueries';
 import { Calculation } from './Calculation';
 
@@ -119,6 +119,9 @@ const getSpecieAgeStandarDeviationService = async (species: string): Promise<num
  * @param data - Pet data to add
  * @returns {Promise<IPet>}
  */
+
+// TODO mejor que sean los actions y que accedan a los repositories? este es un fichero action de pet y el mismo tiene varios metodos
+    // para que sirve el use case? mirar
 const addNewPetService = async (data: Partial<IPet>): Promise<IPet> => {
   try {
     const { species, gender, name, birthdate } = data;

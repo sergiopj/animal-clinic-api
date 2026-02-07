@@ -1,6 +1,6 @@
 'use strict';
 import moment from 'moment';
-import { IPet } from '../database/models/pets/pet.model';
+import { IPet } from '../database/models/pet/pet.model';
 
 // TODO los servicios quizas muchos metodos sean helpers?
 // REVISAR BIEN EL NAMIMG DE TODOS LOS FICHEROS
