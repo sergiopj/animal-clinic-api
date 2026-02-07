@@ -11,7 +11,13 @@ import { FilterQuery } from 'mongoose';
 const getAllElems = (): Promise<IPet[]> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const pets: IPet[] = await Pet.find().sort({ _id: 1 });
+      const pets: IPet[] = await Pet.find()
+        .populate('pathologies')
+        .populate({
+          path: 'vaccinationRecords',
+          populate: { path: 'vaccine' }
+        })
+        .sort({ _id: 1 });
       resolve(pets);
     } catch (error: unknown) {
       const errorMessage = typeof error === 'string'
@@ -30,7 +36,12 @@ const getAllElems = (): Promise<IPet[]> => {
 const findElemById = (id: string): Promise<IPet | null> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const pet: IPet | null = await Pet.findById(id);
+      const pet: IPet | null = await Pet.findById(id)
+        .populate('pathologies')
+        .populate({
+          path: 'vaccinationRecords',
+          populate: { path: 'vaccine' }
+        });
       resolve(pet);
     } catch (error: unknown) {
       const errorMessage = typeof error === 'string'
@@ -49,7 +60,12 @@ const findElemById = (id: string): Promise<IPet | null> => {
 const findElemsByQuerie = (querie: FilterQuery<IPet>): Promise<IPet[]> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const elements: IPet[] = await Pet.find(querie);
+      const elements: IPet[] = await Pet.find(querie)
+        .populate('pathologies')
+        .populate({
+          path: 'vaccinationRecords',
+          populate: { path: 'vaccine' }
+        });
       resolve(elements);
     } catch (error: unknown) {
       const errorMessage = typeof error === 'string'
@@ -68,7 +84,12 @@ const findElemsByQuerie = (querie: FilterQuery<IPet>): Promise<IPet[]> => {
 const findOneByQuerie = (querie: FilterQuery<IPet>): Promise<IPet | null> => {
   return new Promise(async (resolve, reject) => {
     try {
-      const elements: IPet | null = await Pet.findOne(querie);
+      const elements: IPet | null = await Pet.findOne(querie)
+        .populate('pathologies')
+        .populate({
+          path: 'vaccinationRecords',
+          populate: { path: 'vaccine' }
+        });
       resolve(elements);
     } catch (error: unknown) {
       const errorMessage = typeof error === 'string'

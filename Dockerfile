@@ -1,9 +1,6 @@
 # Define the base image
 FROM node:14.21.2
 
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y curl
-
 # Set the working directory
 WORKDIR /app
 
