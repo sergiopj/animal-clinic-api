@@ -1,119 +1,224 @@
+# 🐾 Animal Clinic API
 
-# Animal Clinic Backend API
+REST API desarrollada con **Node.js**, **TypeScript** y **MongoDB** para gestionar datos de mascotas en una clínica veterinaria.
 
-REST API developed in Node.js and TypeScript to expose pet data for Animal Clinic.
-This application uses **MongoDB** as the database.
+---
 
-## Architecture
+## 🚀 Quick Start
 
-The project follows a layered architecture to ensure separation of concerns and maintainability.
+### Opción 1: Docker (Recomendado)
 
-```mermaid
-graph TD
-    Client[Client / Frontend] -->|HTTP Requests| Router[Routes / API]
-    Router -->|Validation| Middleware[Middleware]
-    Middleware -->|Valid Request| Controller[Controllers]
-    Controller -->|Business Logic| Service[Services]
-    Service -->|Data Access| Model[Mongoose Models]
-    Model -->|Query| DB[(MongoDB)]
+```bash
+# 1. Levantar todos los servicios
+docker compose up --build
+
+# 2. Poblar la base de datos con datos de prueba (opcional)
+docker compose exec app npm run seed
+
+# 3. Acceder a la API
+# API: http://localhost:3000/api
+# Health: http://localhost:3000/health
+# Mongo Express: http://localhost:8081
+# Swagger Docs: http://localhost:3000/api-docs
 ```
 
-*   **Routes**: Define the API endpoints and delegate requests to controllers.
-*   **Middleware**: Handles request validation (e.g., input checking).
-*   **Controllers**: Manage the HTTP request/response cycle.
-*   **Services**: Contain the core business logic and interact with the database layer.
-*   **Models**: Define the data structure (Schema) and interact with MongoDB.
+### Opción 2: Local
 
-## Docker Containers
+```bash
+# Requisitos: Node.js 14+, MongoDB corriendo localmente
 
-The project uses Docker Compose to orchestrate the following services:
-
-*   **api**: The Node.js/Express backend application. Exposed on port `3000`.
-*   **mongo**: The MongoDB database instance. Exposed on port `27017`.
-
-## Database Seeding
-
-To facilitate development, the project includes a seeding script that populates the database with initial dummy data (50 pets). This ensures you have enough data to test endpoints like pagination, filtering, or statistics immediately.
-
-To run the seed:
-
-1.  Ensure the database is running (e.g., via `docker-compose up`).
-2.  Run the following command:
-
-```console
-npm run seed
-```
-
-*Note: This will clear existing pets and insert new random data.*
-
-## Running the Application locally:
-
-Features to keep in mind if you want to run the app in a local environment:
-
-* Application built with Node version - v14.21.2 (or higher)
-* Dependency manager npm version - 6.14.17 (or higher)
-* **MongoDB**: You must have a MongoDB instance running locally (default at `mongodb://localhost:27017/animalClinic`).
-
-Commands to execute:
-
-```console
-npm i
+npm install
 npm start
 ```
 
-## Running the Application with Docker (Recommended):
+---
 
-This is the easiest way, as it spins up both the API and the MongoDB database automatically.
+## 🏗️ Arquitectura
 
-Prerequisites:
-* Have docker-compose and docker installed.
-
-To start the containers, run in the project root:
-
-```console
-docker-compose up --build
+```
+┌─────────────┐
+│   Client    │
+└──────┬──────┘
+       │ HTTP
+       ↓
+┌─────────────┐
+│   Routes    │ ← Define endpoints
+└──────┬──────┘
+       ↓
+┌─────────────┐
+│ Controllers │ ← Maneja request/response
+└──────┬──────┘
+       ↓
+┌─────────────┐
+│  Services   │ ← Lógica de negocio
+└──────┬──────┘
+       ↓
+┌─────────────┐
+│   Models    │ ← Schemas de Mongoose
+└──────┬──────┘
+       ↓
+┌─────────────┐
+│   MongoDB   │
+└─────────────┘
 ```
 
-This will start:
-1. The API at `http://localhost:3000`
-2. A MongoDB database on port `27017`
+**Patrón**: Arquitectura por capas con separación de responsabilidades.
 
-_Note: If you want to access the container's file system to verify logs, for example, execute:_
+---
 
-```console
-docker exec -it api /bin/bash
+## 🐳 Servicios Docker
+
+| Servicio | Contenedor | Puerto | Descripción |
+|----------|-----------|--------|-------------|
+| **API** | `animal-clinic-api` | 3000 | Aplicación Node.js/Express |
+| **Database** | `animal-clinic-db` | 27017 | MongoDB 7 |
+| **Admin UI** | `animal-clinic-mongo-express` | 8081 | Interfaz web para MongoDB |
+| **AI** | `animal-clinic-ollama` | 11434 | Servicio IA (opcional, no usado) |
+
+**Comandos útiles:**
+```bash
+# Ver logs
+docker compose logs -f app
+
+# Acceder al contenedor
+docker exec -it animal-clinic-api /bin/bash
+
+# Detener servicios
+docker compose down
+
+# Reiniciar servicios
+docker compose restart
 ```
 
-## Application deployed on a public server:
+---
 
-Url -- [Animal-Clinic-api](https://api-animalclinic.onrender.com).
+## 🌐 Deployed API
 
-## Endpoints
+**URL**: [https://api-animalclinic.onrender.com](https://api-animalclinic.onrender.com)
 
-The REST API has the following endpoints:
+---
 
-* `GET /pets` - Retrieves all registered pets.
+## 📡 API Endpoints
 
-* `GET /pets/:id` - Retrieves information for a specific pet. **Note:** The `id` is now a MongoDB ObjectId (string).
+Para ver la documentación completa de los endpoints disponibles, accede a:
 
-* `GET /pets/species/most_numerous_species` - Retrieves the most numerous pet species.
+**Swagger UI**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
-* `GET /pets/species/average_age?species_name='example'` - Retrieves the average age of pets of the required species.
+**OpenAPI Spec**: [http://localhost:3000/api-docs.json](http://localhost:3000/api-docs.json)
 
-* `POST /pets` - Registers a new pet.
-    * `name` (string, required): Name of the pet.
-    * `species` (string, required): Species of the pet.
-    * `gender` (string, required, must be "male" or "female"): Gender of the pet.
-    * `birthdate` (string, required, format "YYYY-MM-DD"): Birthdate of the pet.   
+---
 
-* `GET /health` - Health check to verify the service is up.
+## 🗄️ Database Seeding
 
-* `GET /api-docs` - Swagger documentation to test the endpoints.
+Para facilitar el desarrollo, incluye un script que genera 50 mascotas de prueba:
 
-## Unit Tests
+```bash
+# Con DB corriendo
+npm run seed
+```
 
-To run the unit tests:
+---
 
-```console
+## 🧪 Tests
+
+```bash
 npm test
 ```
+
+---
+
+## 🤖 AI Features (Opcional)
+
+El servicio **Ollama** está disponible pero **no se usa por defecto**.
+
+**Para activar:**
+```bash
+# Descargar modelo
+docker exec -it animal-clinic-ollama ollama pull llama2
+
+# Verificar
+curl http://localhost:11434/api/tags
+```
+
+**Características disponibles:**
+- Análisis de salud de mascotas
+- Recomendaciones basadas en historial médico
+- Consultas veterinarias asistidas por IA
+
+---
+
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── config/          # Configuraciones (DB, Logger, AI)
+├── controllers/     # Controladores HTTP
+├── services/        # Lógica de negocio
+├── models/          # Schemas de Mongoose
+├── routes/          # Definición de rutas
+├── middlewares/     # Validaciones y middleware
+├── docs/            # Swagger configuration
+└── scripts/         # Scripts de seeding
+```
+
+---
+
+## 🔧 Tecnologías
+
+- **Runtime**: Node.js 14+
+- **Language**: TypeScript
+- **Framework**: Express.js
+- **Database**: MongoDB 7
+- **ODM**: Mongoose
+- **Validation**: express-validator
+- **Documentation**: Swagger/OpenAPI
+- **Logging**: log4js
+- **Testing**: Jest
+- **Containerization**: Docker & Docker Compose
+
+---
+
+## 📝 Variables de Entorno
+
+Archivo `.env`:
+
+```env
+# Database
+DB_USER=admin
+DB_PASSWORD=admin123
+DB_HOST=db
+DB_PORT=27017
+DB_NAME=animalClinic
+
+# API
+PORT=3000
+NODE_ENV=development
+
+# Frontend (CORS)
+FRONT_HOST=http://localhost:4200
+```
+
+---
+
+## 👨‍💻 Desarrollo
+
+```bash
+# Desarrollo con hot reload
+npm run dev
+
+# Build para producción
+npm run build
+
+# Ejecutar producción
+npm start
+
+# Linting
+npm run lint
+```
+
+---
+
+## 📄 Licencia
+
+Este proyecto es de código abierto y está disponible bajo la licencia MIT.
+

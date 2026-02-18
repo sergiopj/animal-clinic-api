@@ -6,9 +6,11 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { container } from 'tsyringe';
 
-import apiRouter from './api/index.js';
+import apiRouter from './routes/index.js';
 import { ILogger } from './application/interfaces/ILogger.js';
 import { Log4jsLogger } from './application/logging/log4js.logger.js';
+import { AIService, PetService, ClinicService, VetService } from './services/index.js';
+import { IClinicRepository, ClinicRepository } from './repositories/index.js';
 
 dotenv.config();
 
@@ -16,6 +18,13 @@ dotenv.config();
 container.register<ILogger>('ILogger', {
   useClass: Log4jsLogger
 });
+container.register<IClinicRepository>('IClinicRepository', {
+  useClass: ClinicRepository
+});
+container.register(AIService, { useClass: AIService });
+container.register(PetService, { useClass: PetService });
+container.register(ClinicService, { useClass: ClinicService });
+container.register(VetService, { useClass: VetService });
 
 const app = express();
 

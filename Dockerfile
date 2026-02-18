@@ -1,5 +1,5 @@
-# Define the base image
-FROM node:20-slim
+# Define the base image - Node.js 22 (LTS)
+FROM node:22-slim
 
 # Set the working directory
 WORKDIR /app
