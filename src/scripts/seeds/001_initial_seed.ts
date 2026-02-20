@@ -1,8 +1,8 @@
-import Clinic from '../../models/entities/Clinic.js';
-import Vet from '../../models/entities/Vet.js';
-import Pet from '../../models/entities/Pet.js';
-import { PetGender } from '../../models/entities/enums/pet-gender.enum.js';
-import { PetSpecies } from '../../models/entities/enums/pet-species.enum.js';
+import Clinic from '../../entities/clinic/Clinic.entity.js';
+import Vet from '../../entities/veterinarian/Veterinarian.entity.js';
+import Pet from '../../entities/pet/Pet.entity.js';
+import { PetGender } from '../../entities/pet/enums/pet-gender.enum.js';
+import { PetSpecies } from '../../entities/pet/enums/pet-species.enum.js';
 
 export const seed = async () => {
   // 1. Crear o obtener Clínica

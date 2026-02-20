@@ -1,4 +1,4 @@
-import { connectDB, disconnectDB } from '../config/database.js';
+import { connectDB, disconnectDB } from '../config/database.config.js';
 import { seed } from './seeds/001_initial_seed.js';
 
 const runSeed = async () => {

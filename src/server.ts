@@ -1,7 +1,30 @@
 import { app } from './app.js';
-import { connectDB, disconnectDB } from './config/database.js';
+import { connectDB, disconnectDB } from './config/database.config.js';
+import { Server } from 'http';
 
 const PORT = process.env.PORT || 3000;
+
+/**
+ * shutdown handler
+ */
+const shutdownHandler = async (server: Server, signal: string): Promise<void> => {
+  console.log(`\n${signal} received, shutting down gracefully...`);
+
+  try {
+    // Close HTTP server
+    await new Promise<void>((resolve, reject) => {
+      server.close((err) => (err ? reject(err) : resolve()));
+    });
+    console.log('✅ HTTP server closed');
+    // Close database connection
+    await disconnectDB();
+    console.log('✅ Database connection closed');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error during shutdown:', error);
+    process.exit(1);
+  }
+};
 
 const startServer = async () => {
   try {
@@ -9,26 +32,15 @@ const startServer = async () => {
 
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`🩺 Health check available at http://localhost:${PORT}/health`);
     });
 
-    // Graceful shutdown
-    const signals = ['SIGTERM', 'SIGINT'];
-    signals.forEach(signal => {
-      process.on(signal, () => {
-        console.log(`${signal} received, shutting down gracefully.`);
-        server.close(() => {
-          console.log('HTTP server closed.');
-          disconnectDB().then(() => {
-            console.log('Database connection closed.');
-            process.exit(0);
-          });
-        });
-      });
+    // Register shutdown handlers
+    const signals: NodeJS.Signals[] = ['SIGTERM', 'SIGINT'];
+    signals.forEach((signal) => {
+      process.on(signal, () => shutdownHandler(server, signal));
     });
-
   } catch (error) {
-    console.error('Failed to start server:', error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 };
