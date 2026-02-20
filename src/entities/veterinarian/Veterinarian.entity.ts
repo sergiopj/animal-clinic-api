@@ -1,10 +1,11 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
+import { ISpecialty } from '../specialty/Specialtyt.entity.js';
 
-export interface IVet extends Document {
+export interface IVeterinarian extends Document {
   firstName: string;
   lastName: string;
   licenseNumber: string;
-  specialties?: string[];
+  specialties?: ISpecialty[];
   phone?: string;
   email: string;
   clinicId: Types.ObjectId;
@@ -13,7 +14,7 @@ export interface IVet extends Document {
 
 // TODO crear entidad especialidades y enums etc
 // organizar bien los directorios
-const vetSchema = new Schema<IVet>(
+const vetSchema = new Schema<IVeterinarian>(
   {
     firstName: {
       type: String,
@@ -28,10 +29,13 @@ const vetSchema = new Schema<IVet>(
       required: true,
       unique: true,
     },
-    specialties: {
-      type: [String],
-      required: false,
-    },
+    specialties: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'Specialty',
+        required: false,
+      },
+    ],
     phone: {
       type: String,
       required: false,
@@ -57,7 +61,7 @@ const vetSchema = new Schema<IVet>(
   }
 );
 
-const Vet = mongoose.model<IVet>('Vet', vetSchema);
+const Vet = mongoose.model<IVeterinarian>('Veterinarian', vetSchema);
 
 export default Vet;
 

@@ -62,6 +62,18 @@ export class ValidationError extends AppError {
 }
 
 /**
+ * 409 Conflict Error (e.g., duplicate unique key)
+ */
+export class DuplicateKeyError extends AppError {
+  constructor(field: string, value?: string) {
+    const message = value 
+      ? `${field} '${value}' already exists`
+      : `Duplicate value for ${field}`;
+    super(409, message);
+  }
+}
+
+/**
  * 500 Internal Server Error
  */
 export class InternalServerError extends AppError {

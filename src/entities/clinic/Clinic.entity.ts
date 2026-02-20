@@ -1,5 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { validateEmail, validateURL } from './property-validator/property.validator.js';
+import { IVeterinarian } from '../veterinarian/Veterinarian.entity.js';
+import { IPet } from '../pet/Pet.entity.js';
 
 export interface IClinic extends Document {
   name: string;
@@ -11,8 +13,8 @@ export interface IClinic extends Document {
   website?: string;
   createdAt?: Date;
   updatedAt?: Date;
-  veterinarians?: any[];
-  pets?: any[];
+  veterinarians?: IVeterinarian[];
+  pets?: IPet[];
 }
 
 const clinicSchema = new Schema<IClinic>(
@@ -31,7 +33,8 @@ const clinicSchema = new Schema<IClinic>(
     },
     vatNumber: {
       type: String,
-      required: false,
+      required: true,
+      unique: true,
     },
     website: {
       type: String,
@@ -65,7 +68,7 @@ const clinicSchema = new Schema<IClinic>(
 
 // Populates
 clinicSchema.virtual('veterinarians', {
-  ref: 'Vet',
+  ref: 'Veterinarian',
   localField: '_id',
   foreignField: 'clinicId',
 });

@@ -4,9 +4,8 @@ import { ClinicService } from '../../services/clinic/clinic.service.js';
 import { matchedData } from 'express-validator';
 import { ILogger } from '../../application/logging/logger.interface.js';
 import { HttpStatus } from '../../utils/http-status.util.js';
-import { NotFoundError, asyncHandler } from '../../middlewares/errors/errors.index.js';
 
-const getAllClinics = async (req: Request, res: Response): Promise<void> => {
+const getAllClinics = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const clinicService = container.resolve(ClinicService);
   const logger = container.resolve<ILogger>('ILogger');
   try {
@@ -14,26 +13,30 @@ const getAllClinics = async (req: Request, res: Response): Promise<void> => {
     res.status(HttpStatus.OK).json(clinics);
   } catch (error) {
     logger.error('Error getting clinics', error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error getting clinics' });
+    next(error);
   }
 };
 
-const getClinicById = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+const getClinicById = async (req: Request, res: Response, next: NextFunction) => {
   const clinicService = container.resolve(ClinicService);
   const logger = container.resolve<ILogger>('ILogger');
+  try {
+    const { id } = matchedData(req);
+    const clinic = await clinicService.getClinicById(id);
 
-  const { id } = matchedData(req);
-  const clinic = await clinicService.getClinicById(id);
+    if (!clinic) {
+      return res.status(HttpStatus.NOT_FOUND).json({ message: 'Clinic not found' });
+    }
 
-  if (!clinic) {
-    throw new NotFoundError('Clinic');
+    logger.info(`Clinic ${id} retrieved successfully`);
+    res.status(HttpStatus.OK).json(clinic);
+  } catch (error) {
+    logger.error('Error getting clinic by id', error);
+    next(error);
   }
+};
 
-  logger.info(`Clinic ${id} retrieved successfully`);
-  res.status(HttpStatus.OK).json(clinic);
-});
-
-const createClinic = async (req: Request, res: Response) => {
+const createClinic = async (req: Request, res: Response, next: NextFunction) => {
   const clinicService = container.resolve(ClinicService);
   const logger = container.resolve<ILogger>('ILogger');
   try {
@@ -41,12 +44,12 @@ const createClinic = async (req: Request, res: Response) => {
     res.status(HttpStatus.CREATED).json(newClinic);
   } catch (error) {
     logger.error('Error creating clinic', error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error creating clinic' });
+    next(error);
   }
 }
 
 
-const updateClinic = async (req: Request, res: Response) => {
+const updateClinic = async (req: Request, res: Response, next: NextFunction) => {
   const clinicService = container.resolve(ClinicService);
   const logger = container.resolve<ILogger>('ILogger');
   try {
@@ -58,11 +61,11 @@ const updateClinic = async (req: Request, res: Response) => {
     res.status(HttpStatus.OK).json(updatedClinic);
   } catch (error) {
     logger.error('Error updating clinic', error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error updating clinic' });
+    next(error);
   }
 };
 
-const addClinic = async (req: Request, res: Response) => {
+const addClinic = async (req: Request, res: Response, next: NextFunction) => {
   const clinicService = container.resolve(ClinicService);
   const logger = container.resolve<ILogger>('ILogger');
   try {
@@ -70,12 +73,12 @@ const addClinic = async (req: Request, res: Response) => {
     res.status(HttpStatus.CREATED).json(newClinic);
   } catch (error) {
     logger.error('Error adding clinic', error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error adding clinic' });
+    next(error);
   }
 };
 
 
-const deleteClinic = async (req: Request, res: Response) => {
+const deleteClinic = async (req: Request, res: Response, next: NextFunction) => {
   const clinicService = container.resolve(ClinicService);
   const logger = container.resolve<ILogger>('ILogger');
   try {
@@ -87,7 +90,7 @@ const deleteClinic = async (req: Request, res: Response) => {
     res.status(HttpStatus.OK).json(deletedClinic);
   } catch (error) {
     logger.error('Error deleting clinic', error);
-    res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({ message: 'Error deleting clinic' });
+    next(error);
   }
 };
 

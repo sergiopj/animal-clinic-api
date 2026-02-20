@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import clinicController from '../../controllers/clinic/clinic.controller.js';
-import { validateClinicRequest } from '../../middlewares/request-validators/clinic/clinic-request.validator.js';
+import { requestValidator } from '../../middlewares/request-validators/request.validator.js';
 import { ClinicIdParamDTO, RequestClinicDTO } from '../../middlewares/request-validators/clinic/Request/request-clinic.dto.js';
 
 const router = Router();
@@ -66,8 +66,7 @@ router.get('/clinics', clinicController.getAllClinics);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-// TODO nAMING A VALIDATOR Y PROBAR BIEN EL VALIDATOR EN SI
-router.get('/clinics/:id', validateClinicRequest(ClinicIdParamDTO, 'params'), clinicController.getClinicById);
+router.get('/clinics/:id', requestValidator(ClinicIdParamDTO, 'params'), clinicController.getClinicById);
 
 /**
  * @swagger
@@ -104,7 +103,7 @@ router.get('/clinics/:id', validateClinicRequest(ClinicIdParamDTO, 'params'), cl
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.post('/clinics', validateClinicRequest(RequestClinicDTO, 'body'), clinicController.createClinic);
+router.post('/clinics', requestValidator(RequestClinicDTO, 'body'), clinicController.createClinic);
 
 /**
  * @swagger
@@ -146,7 +145,7 @@ router.post('/clinics', validateClinicRequest(RequestClinicDTO, 'body'), clinicC
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.put('/clinics/:id', validateClinicRequest(ClinicIdParamDTO, 'params'), validateClinicRequest(RequestClinicDTO, 'body'), clinicController.updateClinic);
+router.put('/clinics/:id', requestValidator(ClinicIdParamDTO, 'params'), requestValidator(RequestClinicDTO, 'body'), clinicController.updateClinic);
 
 /**
  * @swagger
@@ -182,7 +181,7 @@ router.put('/clinics/:id', validateClinicRequest(ClinicIdParamDTO, 'params'), va
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/clinics/:id', validateClinicRequest(ClinicIdParamDTO, 'params'), clinicController.deleteClinic);
+router.delete('/clinics/:id', requestValidator(ClinicIdParamDTO, 'params'), clinicController.deleteClinic);
 
 export default router;
 

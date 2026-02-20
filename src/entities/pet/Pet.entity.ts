@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
 import { PetSpecies } from './enums/pet-species.enum.js';
 import { PetGender } from './enums/pet-gender.enum.js';
+import { IMedicalReport } from '../medical-report/medical-report.entity.js';
 
 export interface IPet extends Document {
   name: string;
@@ -11,8 +12,7 @@ export interface IPet extends Document {
   weight?: number;
   color?: string;
   notes?: string;
-  medicalHistory?: string; // Entidad con las enfermedades o consultas, a su vez la enfermedad tendra su entidad tratamiento
-  isVaccinated?: boolean; // Entidad vacuna con su fecha de vacunacion, etc
+  medicalReport?: IMedicalReport[];  isVaccinated?: boolean;
   isSterilized?: boolean;
   clinicId: Types.ObjectId;
 }
@@ -53,8 +53,9 @@ const petSchema = new Schema<IPet>(
       type: String,
       required: false,
     },
-    medicalHistory: {
-      type: String,
+    medicalReport: {
+      type: [Schema.Types.ObjectId],
+      ref: 'MedicalReport',
       required: false,
     },
     isVaccinated: {

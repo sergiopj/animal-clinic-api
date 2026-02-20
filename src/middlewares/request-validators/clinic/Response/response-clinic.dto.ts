@@ -1,5 +1,5 @@
 import { IPet } from "../../../../entities/pet/Pet.entity.js";
-import { IVet } from "../../../../entities/veterinarian/Veterinarian.entity.js";
+import { IVeterinarian } from "../../../../entities/veterinarian/Veterinarian.entity.js";
 
 export interface ResponseClinicDTO {
   _id: string;
@@ -10,7 +10,7 @@ export interface ResponseClinicDTO {
   website?: string;
   vatNumber?: string;
   licenseNumber: string;
-  veterinarians?: IVet[];
+  veterinarians?: IVeterinarian[];
   pets?: IPet[];
   createdAt: Date;
   updatedAt: Date;
