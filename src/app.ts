@@ -6,10 +6,10 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 
-import apiRouter from './routes/routes.index.js';
-import swaggerSpec from './documentation/swagger.js';
-import { configureContainer } from './config/container.config.js';
-import { errorHandler } from './middlewares/errors/errors.index.js';
+import apiRouter from './shared/routes/routes.index.js';
+import swaggerSpec from './shared/documentation/swagger.js';
+import { configureContainer } from './shared/config/container.config.js';
+import { errorHandler } from './shared/middlewares/errors/errors.index.js';
 
 dotenv.config();
 
@@ -46,5 +46,10 @@ app.use('*', (req: Request, res: Response) => {
 
 // Global Error Handler
 app.use(errorHandler);
+
+// TODO proteger rutas con autenticación y autorización (JWT, OAuth2, etc) ojo con ver historiales clinicos de otras clinicas, solo lo podra ver la entidad superior superadmin clinica padre de todas las clinicas, y cada clinica solo podra ver su propio historial clinico, no el de otras clinicas, ni el de la entidad superior superadmin
+// TODO implementar rate limiting para proteger contra ataques de denegación de servicio (DoS)
+// TODO agregar pruebas unitarias y de integración con Jest y Supertest
+// TODO configurar CI/CD para despliegue automático en plataformas como Heroku, AWS, etc.
 
 export { app };

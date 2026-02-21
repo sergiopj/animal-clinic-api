@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veterinary Clinic Report - {{name}}</title>
+  <style>{{{styles}}}</style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>VETERINARY CLINIC REPORT</h1>
+    <p class="subtitle">Comprehensive Professional Overview</p>
+    <p class="date">Report Generated: {{generatedDate}}</p>
+  </div>
+
+  <!-- Clinic Information -->
+  <div class="section no-break">
+    <h2>Clinic Information</h2>
+    <div class="description">
+      <strong>About Our Practice</strong>
+      This document provides a comprehensive overview of our veterinary practice, including facility details, professional staff credentials, and service capabilities. Our clinic maintains the highest standards of veterinary care, adhering to all regulatory requirements and industry best practices.
+    </div>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">Clinic Name</span>
+        <span class="info-value">{{name}}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">License Number</span>
+        <span class="info-value">{{licenseNumber}}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Physical Address</span>
+        <span class="info-value">{{address}}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">VAT Number</span>
+        <span class="info-value">{{vatNumber}}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Primary Contact</span>
+        <span class="info-value">{{phone}}</span>
+      </div>
+      {{#if email}}
+      <div class="info-item">
+        <span class="info-label">Email Address</span>
+        <span class="info-value">{{email}}</span>
+      </div>
+      {{/if}}
+      {{#if website}}
+      <div class="info-item">
+        <span class="info-label">Website</span>
+        <span class="info-value">{{website}}</span>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+
+  <!-- Professional Team -->
+  {{#if veterinarians.length}}
+  <div class="section no-break">
+    <h2>Professional Team<span class="stats-box">{{veterinarians.length}} Veterinarians</span></h2>
+    <div class="description">
+      <strong>Qualified Veterinary Professionals</strong>
+      Our clinic is staffed by licensed veterinary professionals with extensive training and experience in companion animal medicine. Each veterinarian maintains current licensure and participates in continuing education programs to ensure the delivery of evidence-based, high-quality care.
+    </div>
+    <ul class="team-list">
+      {{#each veterinarians}}
+      <li class="team-member">
+        <span class="name">{{firstName}} {{lastName}}, DVM</span>
+        {{#if experienceYears}}
+        <span class="detail"><span class="label">Experience:</span> {{experienceYears}} years</span>
+        {{/if}}
+        <span class="detail"><span class="label">License:</span> {{licenseNumber}}</span>
+        {{#if email}}
+        <span class="detail"><span class="label">Email:</span> {{email}}</span>
+        {{/if}}
+        {{#if phone}}
+        <span class="detail"><span class="label">Direct Line:</span> {{phone}}</span>
+        {{/if}}
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+  {{/if}}
+
+  <!-- Patient Registry -->
+  {{#if pets.length}}
+  <div class="section no-break">
+    <h2>Patient Registry<span class="stats-box">{{pets.length}} Active Patients</span></h2>
+    <div class="description">
+      <strong>Comprehensive Patient Care</strong>
+      Our clinic maintains detailed medical records for all registered patients, ensuring continuity of care and treatment effectiveness. We utilize advanced veterinary management systems to track health history, vaccination schedules, and treatment protocols for each animal under our care.
+    </div>
+  </div>
+  {{/if}}
+
+  <!-- Services Overview -->
+  <div class="section no-break">
+    <h2>Core Services</h2>
+    <div class="services-grid">
+      <div class="service-item">
+        <h3>Preventive Care</h3>
+        <p>Wellness examinations, vaccination programs, parasite prevention, and health screening protocols.</p>
+      </div>
+      <div class="service-item">
+        <h3>Diagnostic Services</h3>
+        <p>Laboratory testing, digital radiography, ultrasound imaging, and comprehensive health assessments.</p>
+      </div>
+      <div class="service-item">
+        <h3>Surgical Procedures</h3>
+        <p>Routine and advanced surgical interventions performed in modern, fully-equipped facilities.</p>
+      </div>
+      <div class="service-item">
+        <h3>Emergency Care</h3>
+        <p>Urgent medical attention and critical care services available during business hours.</p>
+      </div>
+      <div class="service-item">
+        <h3>Dental Services</h3>
+        <p>Professional dental cleaning, oral surgery, and comprehensive dental health management.</p>
+      </div>
+      <div class="service-item">
+        <h3>Medical Management</h3>
+        <p>Treatment of acute and chronic conditions, including disease management and pain control.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Information -->
+  <div class="contact-box no-break">
+    <strong>FOR APPOINTMENTS & INQUIRIES</strong>
+    <p>Phone: {{phone}}</p>
+    {{#if email}}<p>Email: {{email}}</p>{{/if}}
+    {{#if website}}<p>Web: {{website}}</p>{{/if}}
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p class="signature">{{name}}</p>
+    <p>Licensed Veterinary Practice | License No. {{licenseNumber}}</p>
+    <p>VAT Registration: {{vatNumber}}</p>
+    <p style="margin-top: 15px;">This report was automatically generated by our practice management system.</p>
+    <p>© {{year}} {{name}}. All rights reserved.</p>
+    <p class="confidential">CONFIDENTIAL: This document contains proprietary information intended solely for authorized personnel.</p>
+  </div>
+</body>
+</html>

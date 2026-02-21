@@ -1,5 +1,5 @@
 import { app } from './app.js';
-import { connectDB, disconnectDB } from './config/database.config.js';
+import { connectDB, disconnectDB } from './shared/config/database.config.js';
 import { Server } from 'http';
 
 const PORT = process.env.PORT || 3000;
