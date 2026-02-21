@@ -68,6 +68,7 @@ router.get(`${path}`, clinicController.getAllClinics);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
+// TODO hacer que se envie un email con el PDF adjunto en lugar de descargarlo directamente en otro endpoint se necesita laentidad dueño para eso
 router.get(`${path}/report/:id`, requestValidator(ClinicIdParamDTO, 'params'), clinicController.getClinicReport);
 
 /**
