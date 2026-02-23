@@ -6,15 +6,16 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 
-import apiRouter from './shared/routes/routes.index.js';
-import swaggerSpec from './shared/documentation/swagger.js';
 import { configureContainer } from './shared/config/container.config.js';
-import { errorHandler } from './shared/middlewares/errors/errors.index.js';
 
 dotenv.config();
 
 // Dependency Injection Container Setup
 configureContainer();
+
+import apiRouter from './shared/routes/routes.index.js';
+import swaggerSpec from './shared/documentation/swagger.js';
+import { errorHandler } from './shared/middlewares/errors/errors.index.js';
 
 const app = express();
 

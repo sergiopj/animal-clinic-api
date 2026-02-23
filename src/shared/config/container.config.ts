@@ -6,6 +6,7 @@ import { ClinicRepository } from '../../modules/clinic/clinic.repository.js';
 import { AIService } from '../../modules/ai/ai.service.js';
 import { ClinicService } from '../../modules/clinic/clinic.service.js';
 import { IClinicRepository } from '../../modules/clinic/interfaces/Clinic.interface.js';
+import ClinicController from '../../modules/clinic/clinic.controller.js';
 
 /**
  * Configure Dependency Injection container
@@ -18,9 +19,17 @@ export function configureContainer(): void {
   });
 
   // --- Repositories ---
-  container.register<IClinicRepository>('IClinicRepository', ClinicRepository);
+  container.register<IClinicRepository>('IClinicRepository', {
+    useClass: ClinicRepository,
+  });
 
   // --- Services ---
   container.register(AIService, { useClass: AIService });
   container.register(ClinicService, { useClass: ClinicService });
+
+  // --- Controllers ---
+  container.register(ClinicController, { useClass: ClinicController });
 }
+
+export { container };
+

@@ -1,5 +1,4 @@
 import { ILogger } from "./logger.interface.js";
-import { injectable } from "tsyringe";
 import log4js from 'log4js';
 
 log4js.configure({
@@ -11,7 +10,6 @@ log4js.configure({
   },
 });
 
-@injectable()
 export class Log4jsLogger implements ILogger {
   private logger: log4js.Logger;
 
