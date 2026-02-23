@@ -1,13 +1,13 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
-import { PetSpecies } from './enums/pet-species.enum.js';
-import { PetGender } from './enums/pet-gender.enum.js';
 import { IMedicalReport } from '../medical-report/medical-report.entity.js';
+import { PetGenderEnum } from './enums/pet-gender.enum.js';
+import { PetSpeciesEnum } from './enums/pet-species.enum.js';
 
 export interface IPet extends Document {
   name: string;
-  species: PetSpecies;
+  species: PetSpeciesEnum;
   breed?: string;
-  gender: PetGender;
+  gender: PetGenderEnum;
   birthdate: Date;
   weight?: number;
   color?: string;
@@ -15,6 +15,8 @@ export interface IPet extends Document {
   medicalReport?: IMedicalReport[];  isVaccinated?: boolean;
   isSterilized?: boolean;
   clinicId: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const petSchema = new Schema<IPet>(
@@ -25,7 +27,7 @@ const petSchema = new Schema<IPet>(
     },
     species: {
       type: String,
-      enum: Object.values(PetSpecies),
+      enum: Object.values(PetSpeciesEnum),
       required: true,
     },
     breed: {
@@ -34,7 +36,7 @@ const petSchema = new Schema<IPet>(
     },
     gender: {
       type: String,
-      enum: Object.values(PetGender),
+      enum: Object.values(PetGenderEnum),
       required: true,
     },
     birthdate: {

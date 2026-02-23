@@ -1,5 +1,5 @@
-import { IPet } from "../../pet.entity.js";
-import { IVeterinarian } from "../../../veterinarian/veterinarian.entity.js";
+import { IMedicalReport } from "../../../medical-report/medical-report.entity.js";
+import { ResponseMedicalReportDTO } from "../../../medical-report/dto/Response/response-medical-report.dto.js";
 
 export interface ResponsePetDTO {
   _id: string;
@@ -11,12 +11,10 @@ export interface ResponsePetDTO {
   weight?: number;
   color?: string;
   notes?: string;
-  medicalReport?: string[];
+  medicalReport?: IMedicalReport[] | ResponseMedicalReportDTO[];
   isVaccinated?: boolean;
   isSterilized?: boolean;
   clinicId: string;
   createdAt: Date;
   updatedAt: Date;
-  veterinarians?: IVeterinarian[];
-  pets?: IPet[];
 }

@@ -1,0 +1,221 @@
+/*
+  Archivo: pet-clinical-history-report.style.css
+  Descripción: Estilos para el informe de historial clínico de la mascota.
+  Prioriza un diseño limpio, profesional y legible para la presentación de datos clínicos.
+*/
+
+/* --- Variables Globales --- */
+:root {
+  --primary-color: #4a90e2; /* Azul corporativo */
+  --secondary-color: #f5a623; /* Naranja para acentos */
+  --text-color: #4a4a4a; /* Gris oscuro para texto */
+  --background-color: #ffffff;
+  --border-color: #dddddd;
+  --header-background: #f8f9fa;
+  --font-family: 'Helvetica Neue', 'Arial', sans-serif;
+}
+
+/* --- Estructura General --- */
+body {
+  font-family: var(--font-family);
+  color: var(--text-color);
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.report-container {
+  padding: 25px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  margin: 20px;
+}
+
+/* --- Cabecera del Informe --- */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 3px solid var(--primary-color);
+  margin-bottom: 25px;
+}
+
+.report-header .clinic-info {
+  text-align: left;
+}
+
+.report-header .clinic-name {
+  font-size: 28px;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.report-header .clinic-address,
+.report-header .clinic-contact {
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.report-header .report-title {
+  text-align: right;
+}
+
+.report-header .title {
+  font-size: 24px;
+  font-weight: 300;
+  margin: 0;
+}
+
+.report-header .pet-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--secondary-color);
+  margin: 4px 0;
+}
+
+.report-header .generation-date {
+  font-size: 12px;
+  font-style: italic;
+  color: #7f8c8d;
+}
+
+/* --- Sección de Detalles de la Mascota --- */
+.pet-details-section {
+  background-color: var(--header-background);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+}
+
+.pet-details-section h2 {
+  font-size: 18px;
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 8px;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.detail-item {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #e8e8e8;
+}
+
+.detail-item .label {
+  font-weight: bold;
+  display: block;
+  font-size: 13px;
+  margin-bottom: 5px;
+  color: #34495e;
+}
+
+.detail-item .value {
+  font-size: 14px;
+}
+
+.detail-item .value.vaccinated,
+.detail-item .value.sterilized {
+  font-weight: bold;
+  color: #27ae60; /* Verde para estados positivos */
+}
+
+.detail-item .value.not-vaccinated,
+.detail-item .value.not-sterilized {
+  font-weight: bold;
+  color: #c0392b; /* Rojo para estados negativos */
+}
+
+/* --- Sección de Historial Médico --- */
+.medical-history-section {
+  margin-top: 25px;
+}
+
+.medical-history-section h2 {
+  font-size: 20px;
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.history-entry {
+  border: 1px solid var(--border-color);
+  border-left: 5px solid var(--secondary-color);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  overflow: hidden; /* Para contener los floats */
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.entry-header .entry-date {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.entry-header .veterinarian-info {
+  font-size: 14px;
+  font-style: italic;
+  color: #555;
+}
+
+.entry-content .content-label {
+  font-weight: bold;
+  font-size: 15px;
+  color: #34495e;
+  margin-top: 15px;
+  margin-bottom: 8px;
+}
+
+.entry-content .content-text {
+  background-color: #fdfdfd;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #f0f0f0;
+  white-space: pre-wrap; /* Respeta saltos de línea y espacios */
+}
+
+.no-history {
+  background-color: var(--header-background);
+  text-align: center;
+  padding: 25px;
+  border-radius: 8px;
+  font-style: italic;
+  color: #7f8c8d;
+}
+
+/* --- Pie de Página --- */
+.report-footer {
+  text-align: center;
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-color);
+  font-size: 12px;
+  color: #95a5a6;
+}
+
+.report-footer p {
+  margin: 5px 0;
+}

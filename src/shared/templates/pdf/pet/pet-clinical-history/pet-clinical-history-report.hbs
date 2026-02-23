@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial Clínico de {{pet.name}}</title>
+    <style>
+        {{{styles}}}
+    </style>
+</head>
+<body>
+
+    <div class="report-container">
+
+        <!-- Cabecera del Informe -->
+        <header class="report-header">
+            <div class="clinic-info">
+                <h1 class="clinic-name">{{clinic.name}}</h1>
+                <p class="clinic-address">{{clinic.address}}</p>
+                <p class="clinic-contact">{{clinic.email}} | {{clinic.phone}}</p>
+            </div>
+            <div class="report-title">
+                <h2 class="title">Historial Clínico</h2>
+                <p class="pet-name">{{pet.name}}</p>
+                <p class="generation-date">Informe generado el: {{generatedDate}}</p>
+            </div>
+        </header>
+
+        <!-- Sección de Detalles de la Mascota -->
+        <section class="pet-details-section">
+            <h2>Información de la Mascota</h2>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="label">Especie</span>
+                    <span class="value">{{pet.species}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Raza</span>
+                    <span class="value">{{pet.breed}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Fecha de Nacimiento</span>
+                    <span class="value">{{pet.birthdate}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Sexo</span>
+                    <span class="value">{{pet.gender}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Peso</span>
+                    <span class="value">{{pet.weight}} kg</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Color</span>
+                    <span class="value">{{pet.color}}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Vacunado</span>
+                    {{#if pet.isVaccinated}}
+                        <span class="value vaccinated">Sí</span>
+                    {{else}}
+                        <span class="value not-vaccinated">No</span>
+                    {{/if}}
+                </div>
+                <div class="detail-item">
+                    <span class="label">Esterilizado</span>
+                     {{#if pet.isSterilized}}
+                        <span class="value sterilized">Sí</span>
+                    {{else}}
+                        <span class="value not-sterilized">No</span>
+                    {{/if}}
+                </div>
+            </div>
+            {{#if pet.notes}}
+            <div class="detail-item" style="grid-column: span 3; margin-top: 15px;">
+                <span class="label">Notas Adicionales</span>
+                <span class="value">{{pet.notes}}</span>
+            </div>
+            {{/if}}
+        </section>
+
+        <!-- Historial Médico -->
+        <section class="medical-history-section">
+            <h2>Registros Clínicos</h2>
+            {{#if pet.medicalReport.length}}
+                {{#each pet.medicalReport}}
+                <div class="history-entry">
+                    <div class="entry-header">
+                        <span class="entry-date">{{this.date}}</span>
+                        <span class="veterinarian-info">Atendido por: Dr. {{this.veterinarian.firstName}} {{this.veterinarian.lastName}}</span>
+                    </div>
+                    <div class="entry-content">
+                        <p class="content-label">Diagnóstico</p>
+                        <p class="content-text">{{this.diagnosis}}</p>
+                        <p class="content-label">Tratamiento</p>
+                        <p class="content-text">{{this.treatment}}</p>
+                    </div>
+                </div>
+                {{/each}}
+            {{else}}
+                <div class="no-history">
+                    <p>No existen registros en el historial médico de esta mascota.</p>
+                </div>
+            {{/if}}
+        </section>
+
+        <!-- Pie de Página -->
+        <footer class="report-footer">
+            <p>{{clinic.name}} &copy; {{year}}</p>
+            <p>Este es un documento generado automáticamente. Para cualquier consulta, contacte con nosotros.</p>
+        </footer>
+
+    </div>
+
+</body>
+</html>

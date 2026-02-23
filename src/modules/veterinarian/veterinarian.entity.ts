@@ -12,10 +12,7 @@ export interface IVeterinarian extends Document {
   clinicId: Types.ObjectId;
 }
 
-
-// TODO crear entidad especialidades y enums etc
-// organizar bien los directorios
-const vetSchema = new Schema<IVeterinarian>(
+const veterinarianSchema = new Schema<IVeterinarian>(
   {
     firstName: {
       type: String,
@@ -66,8 +63,8 @@ const vetSchema = new Schema<IVeterinarian>(
   }
 );
 
-const Vet = mongoose.model<IVeterinarian>('Veterinarian', vetSchema);
+const Veterinarian = mongoose.model<IVeterinarian>('Veterinarian', veterinarianSchema);
 
-export default Vet;
-export { Vet };
+export default Veterinarian;
+export { Veterinarian };
 

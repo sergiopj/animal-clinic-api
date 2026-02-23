@@ -1,7 +1,3 @@
-/**
- * Query parameters for clinic listing endpoints
- * Supports both offset and cursor pagination with optional filters
- */
 export interface ClinicQueryParams {
   // Offset-based pagination
   page?: string | number;

@@ -13,9 +13,6 @@ import { Transform } from 'class-transformer';
 import { PetSpecies } from '../../enums/pet-species.enum.js';
 import { PetGender } from '../../enums/pet-gender.enum.js';
 
-/**
- * DTO for creating a new pet
- */
 export class RequestPetDTO {
   @IsString()
   @IsNotEmpty({ message: 'Name is required' })

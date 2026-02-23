@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ClinicService } from './clinic.service.js';
 import { ILogger } from '../../shared/application/logging/logger.interface.js';
 import { HttpStatus } from '../../shared/utils/http-status/http-status.util.js';
-import { generateWelcomeReportPDF } from '../../shared/pdf-render/clinic/report/welcome-report.js';
+import { generateClinicDetailReportPDF } from '../../shared/pdf-render/report/pdf-render-report.js';
 import { ClinicQueryParams } from './dto/Request/query-clinic.dto.js';
 
 class ClinicController {
@@ -95,7 +95,7 @@ class ClinicController {
         return res.status(HttpStatus.NOT_FOUND).json({ message: 'Clinic not found' });
       }
 
-      const pdfBuffer = await generateWelcomeReportPDF(clinic);
+      const pdfBuffer = await generateClinicDetailReportPDF(clinic);
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=clinic_${id}_report.pdf`);
