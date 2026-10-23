@@ -1,0 +1,105 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: #243447;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11pt;
+  line-height: 1.55;
+}
+
+main {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+header {
+  padding: 0 0 18px;
+  border-bottom: 3px solid #2d6a72;
+}
+
+h1 {
+  margin: 4px 0;
+  color: #174b55;
+  font-size: 24pt;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #2d6a72;
+  font-size: 9pt;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  margin: 5px 0 0;
+  color: #61717f;
+}
+
+section {
+  margin-top: 22px;
+}
+
+h2 {
+  margin: 0 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #d9e2e7;
+  color: #174b55;
+  font-size: 14pt;
+}
+
+.pet-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px 18px;
+  margin: 0;
+}
+
+.pet-details div {
+  padding: 8px 10px;
+  background: #f3f7f8;
+}
+
+dt {
+  color: #61717f;
+  font-size: 9pt;
+  font-weight: 700;
+}
+
+dd {
+  margin: 2px 0 0;
+}
+
+.history-entry {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-left: 3px solid #70a6a1;
+  background: #f7f9fa;
+  page-break-inside: avoid;
+}
+
+.history-entry h3,
+.history-entry p {
+  margin: 0 0 4px;
+}
+
+.analysis {
+  white-space: pre-wrap;
+}
+
+footer {
+  margin-top: 28px;
+  padding-top: 12px;
+  border-top: 1px solid #d9e2e7;
+  color: #52616b;
+  font-size: 9pt;
+}
+
+footer p {
+  margin: 12px 0 0;
+  text-align: center;
+}

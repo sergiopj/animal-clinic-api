@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { PET_REPORT, PET_REPOSITORY } from '../../shared/di/injection-tokens.js';
 import { PetPdfReportAdapter } from '../../shared/pdf-render/report/pdf-report.adapter.js';
+import { AiModule } from '../ai/ai.module.js';
 import { medicalReportSchema } from '../medical-report/medical-report.entity.js';
 import { veterinarianSchema } from '../veterinarian/veterinarian.entity.js';
 
@@ -13,6 +14,7 @@ import { PetService } from './pet.service.js';
 
 @Module({
   imports: [
+    AiModule,
     MongooseModule.forFeature([
       { name: 'Pet', schema: petSchema },
       { name: 'MedicalReport', schema: medicalReportSchema },

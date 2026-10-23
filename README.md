@@ -51,6 +51,8 @@ The application reads configuration from `.env`:
 | `FRONT_HOST` | Allowed CORS origin. |
 | `JWT_SECRET` | JWT signing secret, at least 32 characters. |
 | `AUTH_BOOTSTRAP_ADMIN_EMAIL`, `AUTH_BOOTSTRAP_ADMIN_PASSWORD` | Optional. Set both to create the initial platform admin; the password must be at least 12 characters. |
+| `OLLAMA_HOST`, `OLLAMA_MODEL` | Ollama URL and model used to generate pet care reports. |
+| `AI_TEMPERATURE`, `AI_MAX_TOKENS`, `AI_TIMEOUT_MS` | Optional Ollama generation settings (defaults: `0.7`, `2000`, and `120000`). |
 
 Use a private value for `JWT_SECRET`. Do not commit `.env`.
 
@@ -61,6 +63,10 @@ Use a private value for `JWT_SECRET`. Do not commit `.env`.
 - `clinic_user`: reads pets and clinical histories in their own clinic.
 
 Sign in at `POST /api/auth/login` and include the returned token in the `Authorization` header using the Bearer scheme. Clinic and veterinarian routes are restricted to the platform admin.
+
+## AI-assisted pet care report
+
+`POST /api/pets/:id/care-report` returns a PDF containing the pet's calculated age, breed, registered medical history, and Ollama-generated care recommendations and suggested clinic follow-up. It is available to authenticated clinic users for pets in their clinic and to platform administrators. The report is informational and does not replace a veterinarian's assessment. Ollama must be reachable at `OLLAMA_HOST` and have the configured model available; the endpoint returns `503` if generation fails.
 
 ## Useful commands
 

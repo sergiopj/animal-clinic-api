@@ -10,6 +10,7 @@ export const aiConfig = {
   settings: {
     temperature: parseFloat(process.env.AI_TEMPERATURE || '0.7'),
     maxTokens: parseInt(process.env.AI_MAX_TOKENS || '2000', 10),
+    timeoutMs: parseInt(process.env.AI_TIMEOUT_MS || '120000', 10),
   },
 };
 

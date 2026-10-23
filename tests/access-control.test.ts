@@ -129,6 +129,7 @@ describe('clinic-scoped pet access', () => {
     getPets: jest.fn(),
     getPetById: jest.fn(),
     generateClinicalHistoryReport: jest.fn(),
+    generateCareReport: jest.fn(),
   };
   const controller = new PetController(service as unknown as PetService);
 
@@ -136,6 +137,7 @@ describe('clinic-scoped pet access', () => {
     jest.clearAllMocks();
     service.getPetById.mockResolvedValue({});
     service.generateClinicalHistoryReport.mockResolvedValue(Buffer.from('report'));
+    service.generateCareReport.mockResolvedValue(Buffer.from('care report'));
   });
 
   it('scopes pet listings and individual pet reads to the caller clinic', async () => {
@@ -161,6 +163,20 @@ describe('clinic-scoped pet access', () => {
       '64a000000000000000000020',
       clinicId
     );
+  });
+
+  it('scopes AI care reports to the caller clinic', async () => {
+    const user = userFor(UserRole.CLINIC_USER);
+    const response = {
+      setHeader: jest.fn().mockReturnThis(),
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+    await controller.getPetCareReport({ id: '64a000000000000000000020' }, response as never, user);
+
+    expect(service.generateCareReport).toHaveBeenCalledWith('64a000000000000000000020', clinicId);
+    expect(response.setHeader).toHaveBeenCalledWith('Content-Type', 'application/pdf');
+    expect(response.send).toHaveBeenCalledWith(Buffer.from('care report'));
   });
 
   it('lets the platform admin query all clinics without a clinic filter', async () => {
@@ -261,7 +277,8 @@ describe('cursor pagination clinic filters', () => {
     const service = new PetService(
       { info: jest.fn() } as unknown as ILogger,
       repository as unknown as PetRepositoryPort,
-      { generateReport: jest.fn() } as unknown as PetReportPort
+      { generateReport: jest.fn() } as unknown as PetReportPort,
+      { analyzePet: jest.fn() } as never
     );
 
     await service.getPets({ cursor: '' }, clinicId);

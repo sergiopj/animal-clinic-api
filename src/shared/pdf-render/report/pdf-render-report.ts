@@ -3,13 +3,10 @@ import { join } from 'path';
 
 import Handlebars from 'handlebars';
 
+import type { AIResponseDTO } from '../../../modules/ai/ai-query.model.js';
 import { ResponseClinicDTO } from '../../../modules/clinic/dto/Response/response-clinic.dto.js';
 import { ResponsePetDTO } from '../../../modules/pet/dto/Response/response-pet.dto.js';
-import {
-  getPdfBuffer,
-  generatedDate,
-  startChromium,
-} from '../../pdf-render/utils/pdf-render-utils.js';
+import { getPdfBuffer, generatedDate } from '../../pdf-render/utils/pdf-render-utils.js';
 import { IPdfRenderOptions } from '../pdf-render.interface.js';
 
 // TODO hacerlo multi-idioma, con traducciones para cada campo y fecha en formato local segun el idioma del front
@@ -27,9 +24,20 @@ export const generateClinicDetailReportPDF = async (
     'shared',
     'templates',
     'pdf',
-    'clinic-report.hbs'
+    'clinic',
+    'clinic-detail',
+    'clinic-detail-report.hbs'
   );
-  const stylesPath = join(process.cwd(), 'src', 'shared', 'templates', 'pdf', 'clinic-report.css');
+  const stylesPath = join(
+    process.cwd(),
+    'src',
+    'shared',
+    'templates',
+    'pdf',
+    'clinic',
+    'clinic-detail',
+    'clinic-detail-report.css'
+  );
 
   const [templateContent, stylesContent] = await Promise.all([
     readFile(templatePath, codification),
@@ -93,6 +101,8 @@ export const generatePetClinicalHistoryReportPDF = async (
     'shared',
     'templates',
     'pdf',
+    'pet',
+    'pet-clinical-history',
     'pet-clinical-history-report.hbs'
   );
   const stylesPath = join(
@@ -101,6 +111,8 @@ export const generatePetClinicalHistoryReportPDF = async (
     'shared',
     'templates',
     'pdf',
+    'pet',
+    'pet-clinical-history',
     'pet-clinical-history-report.css'
   );
 
@@ -111,20 +123,14 @@ export const generatePetClinicalHistoryReportPDF = async (
 
   const template = Handlebars.compile(templateContent);
 
-  // Convert Mongoose documents to plain objects for Handlebars
   const data = {
-    ...mappingPetToTemplateData(pet),
-    styles: stylesContent, // Inject CSS into template
+    pet: mappingPetToTemplateData(pet),
+    generatedDate,
+    year: new Date().getFullYear(),
+    styles: stylesContent,
   };
 
   const html = template(data);
-
-  const browser = await startChromium();
-
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'load' });
-
-  await browser.close();
 
   return Buffer.from(await getPdfBuffer(html, options));
 };
@@ -143,7 +149,7 @@ const mappingPetToTemplateData = (pet: ResponsePetDTO) => {
     isSterilized: pet.isSterilized,
     medicalReport:
       pet.medicalReport?.map((report) => ({
-        date: report.date,
+        date: new Date(report.date).toLocaleDateString(locale),
         diagnosis: report.diagnosis,
         treatment: report.treatment,
         veterinarian: {
@@ -154,7 +160,51 @@ const mappingPetToTemplateData = (pet: ResponsePetDTO) => {
           phone: report.veterinarianId.phone,
         },
       })) || [],
-    generatedDate,
-    year: new Date().getFullYear(),
   };
+};
+
+export const generatePetCareReportPDF = async (
+  pet: ResponsePetDTO,
+  analysis: AIResponseDTO,
+  options?: IPdfRenderOptions
+): Promise<Buffer> => {
+  const templatePath = join(
+    process.cwd(),
+    'src',
+    'shared',
+    'templates',
+    'pdf',
+    'pet',
+    'pet-care-report',
+    'pet-care-report.hbs'
+  );
+  const stylesPath = join(
+    process.cwd(),
+    'src',
+    'shared',
+    'templates',
+    'pdf',
+    'pet',
+    'pet-care-report',
+    'pet-care-report.css'
+  );
+
+  const [templateContent, stylesContent] = await Promise.all([
+    readFile(templatePath, codification),
+    readFile(stylesPath, codification),
+  ]);
+  const template = Handlebars.compile(templateContent);
+  const html = template({
+    pet: mappingPetToTemplateData(pet),
+    analysis,
+    generatedDate: new Date().toLocaleDateString(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }),
+    year: new Date().getFullYear(),
+    styles: stylesContent,
+  });
+
+  return Buffer.from(await getPdfBuffer(html, options));
 };

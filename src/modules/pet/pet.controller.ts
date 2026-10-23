@@ -63,6 +63,24 @@ export class PetController {
       .send(pdfBuffer);
   }
 
+  @Post(':id/care-report')
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN, UserRole.CLINIC_USER)
+  @ApiOperation({ summary: 'Generate and download an AI-assisted pet care report PDF' })
+  async getPetCareReport(
+    @Param() params: PetIdParamDTO,
+    @Res() response: Response,
+    @CurrentUser() user: AuthenticatedUser
+  ): Promise<void> {
+    const pdfBuffer = await this.petService.generateCareReport(params.id, this.clinicScope(user));
+    if (!pdfBuffer) throw new NotFoundException('Pet not found');
+
+    response
+      .setHeader('Content-Type', 'application/pdf')
+      .setHeader('Content-Disposition', `attachment; filename=pet_${params.id}_care_report.pdf`)
+      .status(200)
+      .send(pdfBuffer);
+  }
+
   @Get(':id')
   @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN, UserRole.CLINIC_USER)
   async getPetById(@Param() params: PetIdParamDTO, @CurrentUser() user: AuthenticatedUser) {

@@ -1,0 +1,61 @@
+<html lang='es'>
+  <head>
+    <meta charset='UTF-8' />
+    <title>Informe de cuidados de {{pet.name}}</title>
+    <style>
+      {{{styles}}}
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class='eyebrow'>Animal Clinic · Informe orientativo</p>
+        <h1>Cuidados y recomendaciones</h1>
+        <p class='subtitle'>Informe generado el {{generatedDate}}</p>
+      </header>
+
+      <section>
+        <h2>Datos de la mascota</h2>
+        <dl class='pet-details'>
+          <div><dt>Nombre</dt><dd>{{pet.name}}</dd></div>
+          <div><dt>Especie</dt><dd>{{pet.species}}</dd></div>
+          <div><dt>Raza</dt><dd>{{#if pet.breed}}{{pet.breed}}{{else}}No especificada{{/if}}</dd></div>
+          <div><dt>Edad</dt><dd>{{analysis.age}}</dd></div>
+          <div><dt>Sexo</dt><dd>{{pet.gender}}</dd></div>
+          <div><dt>Peso</dt><dd>{{#if pet.weight}}{{pet.weight}} kg{{else}}No indicado{{/if}}</dd></div>
+          <div><dt>Vacunación</dt><dd>{{#if pet.isVaccinated}}Al día{{else}}No consta como vacunado{{/if}}</dd></div>
+          <div><dt>Esterilización</dt><dd>{{#if pet.isSterilized}}Sí{{else}}No{{/if}}</dd></div>
+        </dl>
+      </section>
+
+      <section>
+        <h2>Historial de patologías y tratamientos registrados</h2>
+        {{#if pet.medicalReport.length}}
+          {{#each pet.medicalReport}}
+            <article class='history-entry'>
+              <h3>{{this.diagnosis}}</h3>
+              <p><strong>Fecha:</strong> {{this.date}}</p>
+              <p><strong>Tratamiento registrado:</strong> {{this.treatment}}</p>
+            </article>
+          {{/each}}
+        {{else}}
+          <p>No hay antecedentes clínicos registrados en el historial disponible.</p>
+        {{/if}}
+      </section>
+
+      <section class='recommendations'>
+        <h2>Informe de cuidados y recomendaciones</h2>
+        <div class='analysis'>{{analysis.analysis}}</div>
+      </section>
+
+      <footer>
+        <strong>Importante:</strong>
+        este documento ofrece orientación general generada con inteligencia artificial. No sustituye
+        la valoración, el diagnóstico ni las indicaciones de un veterinario. Consulta con la clínica
+        para confirmar la periodicidad de seguimiento adecuada y acude antes si aparecen síntomas o
+        empeora su estado.
+        <p>© {{year}} Animal Clinic</p>
+      </footer>
+    </main>
+  </body>
+</html>

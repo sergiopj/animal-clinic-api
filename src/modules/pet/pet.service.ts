@@ -11,6 +11,7 @@ import {
   PaginationParams,
   CursorPaginationParams,
 } from '../../shared/utils/pagination/pagination.util.js';
+import { AIService } from '../ai/ai.service.js';
 
 import { PetQueryParams } from './dto/Request/query-pet.dto.js';
 import { ResponsePetDTO } from './dto/Response/response-pet.dto.js';
@@ -24,7 +25,8 @@ export class PetService {
   constructor(
     @Inject(LOGGER) private logger: ILogger,
     @Inject(PET_REPOSITORY) private petRepository: PetRepositoryPort,
-    @Inject(PET_REPORT) private petReport: PetReportPort
+    @Inject(PET_REPORT) private petReport: PetReportPort,
+    private readonly aiService: AIService
   ) {}
 
   private toResponseDTO(pet: IPet): ResponsePetDTO {
@@ -93,6 +95,29 @@ export class PetService {
     const pet = await this.getPetWithClinicalHistory(id, clinicId);
     if (!pet) return null;
     return this.petReport.generateReport(pet);
+  }
+
+  public async generateCareReport(id: string, clinicId?: string): Promise<Buffer | null> {
+    const pet = await this.getPetWithClinicalHistory(id, clinicId);
+    if (!pet) return null;
+
+    const analysis = await this.aiService.analyzePet({
+      id: pet._id,
+      name: pet.name,
+      species: pet.species,
+      breed: pet.breed,
+      gender: pet.gender,
+      birthdate: pet.birthdate,
+      weight: pet.weight,
+      isVaccinated: pet.isVaccinated,
+      isSterilized: pet.isSterilized,
+      medicalReport: pet.medicalReport?.map((report) => ({
+        date: report.date,
+        diagnosis: report.diagnosis,
+        treatment: report.treatment,
+      })),
+    });
+    return this.petReport.generateCareReport(pet, analysis);
   }
 
   public async addPet(petData: IPet, clinicId?: string): Promise<ResponsePetDTO> {
