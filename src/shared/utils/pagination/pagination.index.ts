@@ -2,22 +2,19 @@ export type {
   PaginationParams,
   CursorPaginationParams,
   PaginatedResponse,
-  CursorPaginatedResponse
+  CursorPaginatedResponse,
 } from './pagination.util.js';
 
-export type {
-  PaginatedResponseDTO,
-  CursorPaginatedResponseDTO
-} from './paginated-response.dto.js';
+export type { PaginatedResponseDTO, CursorPaginatedResponseDTO } from './paginated-response.dto.js';
 
 export {
   parsePaginationParams,
   parseCursorPaginationParams,
   calculateSkip,
-  calculateTotalPages
+  calculateTotalPages,
 } from './pagination.util.js';
 
 export {
   transformPaginatedResponse,
-  transformCursorPaginatedResponse
+  transformCursorPaginatedResponse,
 } from './paginated-response.dto.js';

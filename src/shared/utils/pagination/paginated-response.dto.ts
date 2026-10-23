@@ -27,7 +27,7 @@ export function transformPaginatedResponse<TSource, TDest>(
 ): PaginatedResponseDTO<TDest> {
   return {
     data: response.data.map(mapper),
-    pagination: response.pagination
+    pagination: response.pagination,
   };
 }
 
@@ -37,6 +37,6 @@ export function transformCursorPaginatedResponse<TSource, TDest>(
 ): CursorPaginatedResponseDTO<TDest> {
   return {
     data: response.data.map(mapper),
-    pagination: response.pagination
+    pagination: response.pagination,
   };
 }

@@ -1,110 +1,80 @@
-import { Request, Response, NextFunction } from 'express';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+} from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
+
+import { UserRole } from '../../shared/auth/auth.types.js';
+import { Roles } from '../../shared/auth/roles.decorator.js';
+
+import type { IClinic } from './clinic.entity.js';
 import { ClinicService } from './clinic.service.js';
-import { ILogger } from '../../shared/application/logging/logger.interface.js';
-import { HttpStatus } from '../../shared/utils/http-status/http-status.util.js';
-import { generateClinicDetailReportPDF } from '../../shared/pdf-render/report/pdf-render-report.js';
 import { ClinicQueryParams } from './dto/Request/query-clinic.dto.js';
+import { ClinicIdParamDTO, RequestClinicDTO } from './dto/Request/request-clinic.dto.js';
 
-class ClinicController {
-  constructor(
-    private readonly clinicService: ClinicService,
-    private readonly logger: ILogger
-  ) {}
+@ApiTags('Clinics')
+@Roles(UserRole.PLATFORM_ADMIN)
+@Controller('clinics')
+export class ClinicController {
+  constructor(private readonly clinicService: ClinicService) {}
 
-  getClinics = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const result = await this.clinicService.getClinics(req.query as ClinicQueryParams);
-      res.status(HttpStatus.OK).json(result);
-    } catch (error) {
-      this.logger.error('Error getting clinics', error);
-      next(error);
-    }
-  };
+  @Get()
+  @ApiOperation({ summary: 'Get clinics with pagination and filters' })
+  getClinics(@Query() query: ClinicQueryParams) {
+    return this.clinicService.getClinics(query);
+  }
 
-  getClinicById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id;
-      const clinic = await this.clinicService.getClinicById(id);
+  @Get(':id')
+  async getClinicById(@Param() params: ClinicIdParamDTO) {
+    const clinic = await this.clinicService.getClinicById(params.id);
+    if (!clinic) throw new NotFoundException('Clinic not found');
+    return clinic;
+  }
 
-      if (!clinic) {
-        return res.status(HttpStatus.NOT_FOUND).json({ message: 'Clinic not found' });
-      }
+  @Post()
+  createClinic(@Body() clinicData: RequestClinicDTO) {
+    return this.clinicService.addClinic(clinicData as unknown as Partial<IClinic>);
+  }
 
-      this.logger.info(`Clinic ${id} retrieved successfully`);
-      res.status(HttpStatus.OK).json(clinic);
-    } catch (error) {
-      this.logger.error('Error getting clinic by id', error);
-      next(error);
-    }
-  };
+  @Put(':id')
+  async updateClinic(@Param() params: ClinicIdParamDTO, @Body() clinicData: RequestClinicDTO) {
+    const clinic = await this.clinicService.updateClinic(
+      params.id,
+      clinicData as unknown as Partial<IClinic>
+    );
+    if (!clinic) throw new NotFoundException('Clinic not found');
+    return clinic;
+  }
 
-  createClinic = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const newClinic = await this.clinicService.addClinic(req.body);
-      res.status(HttpStatus.CREATED).json(newClinic);
-    } catch (error) {
-      this.logger.error('Error creating clinic', error);
-      next(error);
-    }
-  };
+  @Delete(':id')
+  async deleteClinic(@Param() params: ClinicIdParamDTO) {
+    const clinic = await this.clinicService.deleteClinic(params.id);
+    if (!clinic) throw new NotFoundException('Clinic not found');
+    return clinic;
+  }
 
-  updateClinic = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id;
-      const updatedClinic = await this.clinicService.updateClinic(id, req.body);
-      if (!updatedClinic) {
-        return res.status(HttpStatus.NOT_FOUND).json({ message: 'Clinic not found' });
-      }
-      res.status(HttpStatus.OK).json(updatedClinic);
-    } catch (error) {
-      this.logger.error('Error updating clinic', error);
-      next(error);
-    }
-  };
+  @Get('report/:id')
+  @ApiOperation({ summary: 'Download a clinic PDF report' })
+  async getClinicReport(
+    @Param() params: ClinicIdParamDTO,
+    @Res() response: Response
+  ): Promise<void> {
+    const pdfBuffer = await this.clinicService.generateClinicReport(params.id);
+    if (!pdfBuffer) throw new NotFoundException('Clinic not found');
 
-  addClinic = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const newClinic = await this.clinicService.addClinic(req.body);
-      res.status(HttpStatus.CREATED).json(newClinic);
-    } catch (error) {
-      this.logger.error('Error adding clinic', error);
-      next(error);
-    }
-  };
-
-  deleteClinic = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id;
-      const deletedClinic = await this.clinicService.deleteClinic(id);
-      if (!deletedClinic) {
-        return res.status(HttpStatus.NOT_FOUND).json({ message: 'Clinic not found' });
-      }
-      res.status(HttpStatus.OK).json(deletedClinic);
-    } catch (error) {
-      this.logger.error('Error deleting clinic', error);
-      next(error);
-    }
-  };
-
-  getClinicReport = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id;
-      const clinic = await this.clinicService.getClinicById(id);
-
-      if (!clinic) {
-        return res.status(HttpStatus.NOT_FOUND).json({ message: 'Clinic not found' });
-      }
-
-      const pdfBuffer = await generateClinicDetailReportPDF(clinic);
-
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=clinic_${id}_report.pdf`);
-      res.status(HttpStatus.OK).send(pdfBuffer);
-    } catch (error) {
-      this.logger.error('Error generating clinic report', error);
-      next(error);
-    }
-  };
+    response
+      .setHeader('Content-Type', 'application/pdf')
+      .setHeader('Content-Disposition', `attachment; filename=clinic_${params.id}_report.pdf`)
+      .status(200)
+      .send(pdfBuffer);
+  }
 }
-
-export default ClinicController;

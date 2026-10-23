@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
-const getMongoUri = (): string => {
+export const getMongoUri = (): string => {
   const user = process.env.DB_USER || 'admin';
   const password = process.env.DB_PASSWORD || 'admin';
   const host = process.env.DB_HOST || 'localhost';

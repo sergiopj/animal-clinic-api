@@ -35,18 +35,28 @@ export interface CursorPaginatedResponse<T> {
   };
 }
 
-export const parsePaginationParams = (query: any): Required<PaginationParams> => {
-  const page = Math.max(1, parseInt(query.page) || 1);
-  const limit = Math.min(100, Math.max(1, parseInt(query.limit) || 10));
+interface PaginationQuery {
+  page?: string | number;
+  limit?: string | number;
+  sortBy?: string;
+  sortOrder?: string;
+  cursor?: string;
+}
+
+export const parsePaginationParams = (query: PaginationQuery): Required<PaginationParams> => {
+  const page = Math.max(1, parseInt(String(query.page ?? ''), 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(String(query.limit ?? ''), 10) || 10));
   const sortBy = query.sortBy || 'createdAt';
   const sortOrder = query.sortOrder === 'asc' ? 'asc' : 'desc';
 
   return { page, limit, sortBy, sortOrder };
 };
 
-export const parseCursorPaginationParams = (query: any): Required<CursorPaginationParams> => {
+export const parseCursorPaginationParams = (
+  query: PaginationQuery
+): Required<CursorPaginationParams> => {
   const cursor = query.cursor || '';
-  const limit = Math.min(100, Math.max(1, parseInt(query.limit) || 10));
+  const limit = Math.min(100, Math.max(1, parseInt(String(query.limit ?? ''), 10) || 10));
   const sortBy = query.sortBy || '_id';
   const sortOrder = query.sortOrder === 'asc' ? 'asc' : 'desc';
 

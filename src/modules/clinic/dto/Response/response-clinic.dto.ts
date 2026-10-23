@@ -1,5 +1,5 @@
-import { IPet } from "../../../pet/pet.entity.js";
-import { IVeterinarian } from "../../../veterinarian/veterinarian.entity.js";
+import { IPet } from '../../../pet/pet.entity.js';
+import { IVeterinarian } from '../../../veterinarian/veterinarian.entity.js';
 
 export interface ResponseClinicDTO {
   _id: string;

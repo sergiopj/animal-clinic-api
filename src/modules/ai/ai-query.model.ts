@@ -16,4 +16,3 @@ export interface AIResponseDTO {
 }
 
 export type AIResponseModel = AIResponseDTO;
-

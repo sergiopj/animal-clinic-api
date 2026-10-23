@@ -1,15 +1,17 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
 
+import type { IVeterinarian } from '../veterinarian/veterinarian.entity.js';
+
 export interface IMedicalReport extends Document {
   petId: Types.ObjectId;
-  veterinarianId: Types.ObjectId;
+  veterinarianId: Types.ObjectId | IVeterinarian;
   clinicId: Types.ObjectId;
   diagnosis: string;
   treatment: string;
   date: Date;
 }
 
-const petSchema = new Schema<IMedicalReport>(
+export const medicalReportSchema = new Schema<IMedicalReport>(
   {
     petId: {
       type: Schema.Types.ObjectId,
@@ -48,6 +50,6 @@ const petSchema = new Schema<IMedicalReport>(
   }
 );
 
-const MedicalReport = mongoose.model<IMedicalReport>('MedicalReport', petSchema);
+const MedicalReport = mongoose.model<IMedicalReport>('MedicalReport', medicalReportSchema);
 
 export default MedicalReport;

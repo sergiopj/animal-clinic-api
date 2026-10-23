@@ -7,4 +7,3 @@ enum HttpStatus {
 }
 
 export { HttpStatus };
-

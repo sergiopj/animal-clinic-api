@@ -1,5 +1,7 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
+
 import { IMedicalReport } from '../medical-report/medical-report.entity.js';
+
 import { PetGenderEnum } from './enums/pet-gender.enum.js';
 import { PetSpeciesEnum } from './enums/pet-species.enum.js';
 
@@ -12,14 +14,15 @@ export interface IPet extends Document {
   weight?: number;
   color?: string;
   notes?: string;
-  medicalReport?: IMedicalReport[];  isVaccinated?: boolean;
+  medicalReport?: IMedicalReport[];
+  isVaccinated?: boolean;
   isSterilized?: boolean;
   clinicId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const petSchema = new Schema<IPet>(
+export const petSchema = new Schema<IPet>(
   {
     name: {
       type: String,
@@ -84,4 +87,3 @@ const Pet = mongoose.model<IPet>('Pet', petSchema);
 
 export default Pet;
 export { Pet };
-

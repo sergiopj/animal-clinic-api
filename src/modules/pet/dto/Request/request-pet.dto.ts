@@ -1,32 +1,36 @@
-import { 
-  IsString, 
-  IsNotEmpty, 
-  IsOptional, 
-  IsEnum, 
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEnum,
   IsDateString,
   IsNumber,
   IsBoolean,
   IsMongoId,
-  Min
+  Min,
 } from 'class-validator';
-import { Transform } from 'class-transformer';
-import { PetSpecies } from '../../enums/pet-species.enum.js';
-import { PetGender } from '../../enums/pet-gender.enum.js';
+
+import { PetGenderEnum } from '../../enums/pet-gender.enum.js';
+import { PetSpeciesEnum } from '../../enums/pet-species.enum.js';
 
 export class RequestPetDTO {
   @IsString()
   @IsNotEmpty({ message: 'Name is required' })
   name!: string;
 
-  @IsEnum(PetSpecies, { message: `Species must be one of: ${Object.values(PetSpecies).join(', ')}` })
-  species!: PetSpecies;
+  @IsEnum(PetSpeciesEnum, {
+    message: `Species must be one of: ${Object.values(PetSpeciesEnum).join(', ')}`,
+  })
+  species!: PetSpeciesEnum;
 
   @IsString()
   @IsOptional()
   breed?: string;
 
-  @IsEnum(PetGender, { message: `Gender must be one of: ${Object.values(PetGender).join(', ')}` })
-  gender!: PetGender;
+  @IsEnum(PetGenderEnum, {
+    message: `Gender must be one of: ${Object.values(PetGenderEnum).join(', ')}`,
+  })
+  gender!: PetGenderEnum;
 
   @IsDateString({}, { message: 'Birthdate must be a valid date' })
   birthdate!: Date;
@@ -55,7 +59,6 @@ export class RequestPetDTO {
   @IsMongoId({ message: 'Clinic ID must be a valid MongoDB ObjectId' })
   clinicId!: string;
 }
-
 
 /**
  * DTO for validating MongoDB ObjectId in params

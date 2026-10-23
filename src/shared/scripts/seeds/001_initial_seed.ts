@@ -1,8 +1,8 @@
 import Clinic from '../../../modules/clinic/clinic.entity.js';
-import Vet from '../../../modules/veterinarian/veterinarian.entity.js';
+import { PetGenderEnum } from '../../../modules/pet/enums/pet-gender.enum.js';
+import { PetSpeciesEnum } from '../../../modules/pet/enums/pet-species.enum.js';
 import Pet from '../../../modules/pet/pet.entity.js';
-import { PetGender } from '../../../modules/pet/enums/pet-gender.enum.js';
-import { PetSpecies } from '../../../modules/pet/enums/pet-species.enum.js';
+import Vet from '../../../modules/veterinarian/veterinarian.entity.js';
 
 export const seed = async () => {
   // 1. Crear o obtener Clínica
@@ -15,7 +15,7 @@ export const seed = async () => {
       email: 'contacto@animalclinic.com',
       website: 'https://www.animalclinic.com',
       vatNumber: 'ESB12345678',
-      licenseNumber: 'CL-2023-001'
+      licenseNumber: 'CL-2023-001',
     });
   }
   console.log('Clinic created or found.');
@@ -32,7 +32,7 @@ export const seed = async () => {
       email: 'juan.perez@clinic.com',
       experienceYears: 12,
       phone: '+34 912 345 679',
-      clinicId: clinicId
+      clinicId: clinicId,
     });
   }
 
@@ -45,7 +45,7 @@ export const seed = async () => {
       email: 'ana.garcia@clinic.com',
       experienceYears: 8,
       phone: '+34 912 345 680',
-      clinicId: clinicId
+      clinicId: clinicId,
     });
   }
   console.log('Veterinarians created or found.');
@@ -55,10 +55,10 @@ export const seed = async () => {
   if (!pet1) {
     pet1 = await Pet.create({
       name: 'Max',
-      species: PetSpecies.Dog,
-      gender: PetGender.Male,
+      species: PetSpeciesEnum.Dog,
+      gender: PetGenderEnum.Male,
       birthdate: new Date('2020-01-15'),
-      clinicId: clinicId
+      clinicId: clinicId,
     });
   }
 
@@ -66,10 +66,10 @@ export const seed = async () => {
   if (!pet2) {
     pet2 = await Pet.create({
       name: 'Luna',
-      species: PetSpecies.Cat,
-      gender: PetGender.Female,
+      species: PetSpeciesEnum.Cat,
+      gender: PetGenderEnum.Female,
       birthdate: new Date('2021-05-20'),
-      clinicId: clinicId
+      clinicId: clinicId,
     });
   }
   console.log('Pets created or found.');

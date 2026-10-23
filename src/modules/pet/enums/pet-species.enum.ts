@@ -4,6 +4,5 @@ export enum PetSpeciesEnum {
   Bird = 'Bird',
   Reptile = 'Reptile',
   Fish = 'Fish',
-  Other = 'Other'
+  Other = 'Other',
 }
-

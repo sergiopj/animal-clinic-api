@@ -1,7 +1,9 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { validateEmail, validateURL } from './property-validator/property.validator.js';
-import { IVeterinarian } from '../veterinarian/veterinarian.entity.js';
+
 import { IPet } from '../pet/pet.entity.js';
+import { IVeterinarian } from '../veterinarian/veterinarian.entity.js';
+
+import { validateEmail, validateURL } from './property-validator/property.validator.js';
 
 export interface IClinic extends Document {
   name: string;
@@ -17,7 +19,7 @@ export interface IClinic extends Document {
   pets?: IPet[];
 }
 
-const clinicSchema = new Schema<IClinic>(
+export const clinicSchema = new Schema<IClinic>(
   {
     name: {
       type: String,
@@ -83,4 +85,3 @@ const Clinic = mongoose.model<IClinic>('Clinic', clinicSchema);
 
 export default Clinic;
 export { Clinic };
-

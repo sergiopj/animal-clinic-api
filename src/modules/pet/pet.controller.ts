@@ -1,110 +1,103 @@
-import { Request, Response, NextFunction } from 'express';
-import { ILogger } from '../../shared/application/logging/logger.interface.js';
-import { HttpStatus } from '../../shared/utils/http-status/http-status.util.js';
-import { PetService } from './pet.service.js';
+import {
+  Body,
+  Controller,
+  Delete,
+  ForbiddenException,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+} from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
+
+import type { AuthenticatedUser } from '../../shared/auth/auth.types.js';
+import { UserRole } from '../../shared/auth/auth.types.js';
+import { CurrentUser } from '../../shared/auth/current-user.decorator.js';
+import { Roles } from '../../shared/auth/roles.decorator.js';
+
 import { PetQueryParams } from './dto/Request/query-pet.dto.js';
-import { generatePetClinicalHistoryReportPDF } from '../../shared/pdf-render/report/pdf-render-report.js';
+import { PetIdParamDTO, RequestPetDTO } from './dto/Request/request-pet.dto.js';
+import type { IPet } from './pet.entity.js';
+import { PetService } from './pet.service.js';
 
-class PetController {
-  constructor(
-    private readonly petService: PetService,
-    private readonly logger: ILogger
-  ) {}
+@ApiTags('Pets')
+@Controller('pets')
+export class PetController {
+  constructor(private readonly petService: PetService) {}
 
-  getPets = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const result = await this.petService.getPets(req.query as PetQueryParams);
-      res.status(HttpStatus.OK).json(result);
-    } catch (error) {
-      this.logger.error('Error getting pets', error);
-      next(error);
-    }
-  };
+  private clinicScope(user: AuthenticatedUser): string | undefined {
+    if (user.role === UserRole.PLATFORM_ADMIN) return undefined;
+    if (!user.clinicId) throw new ForbiddenException('User is not assigned to a clinic');
+    return user.clinicId;
+  }
 
-  getPetById = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id;
-      const pet = await this.petService.getPetById(id);
+  @Get()
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN, UserRole.CLINIC_USER)
+  @ApiOperation({ summary: 'Get pets with pagination and filters' })
+  getPets(@Query() query: PetQueryParams, @CurrentUser() user: AuthenticatedUser) {
+    return this.petService.getPets(query, this.clinicScope(user));
+  }
 
-      if (!pet) {
-        return res.status(HttpStatus.NOT_FOUND).json({ message: 'Pet not found' });
-      }
+  @Get('report/:id')
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN, UserRole.CLINIC_USER)
+  @ApiOperation({ summary: 'Download a pet clinical history PDF' })
+  async getPetReport(
+    @Param() params: PetIdParamDTO,
+    @Res() response: Response,
+    @CurrentUser() user: AuthenticatedUser
+  ): Promise<void> {
+    const pdfBuffer = await this.petService.generateClinicalHistoryReport(
+      params.id,
+      this.clinicScope(user)
+    );
+    if (!pdfBuffer) throw new NotFoundException('Pet not found');
 
-      this.logger.info(`Pet ${id} retrieved successfully`);
-      res.status(HttpStatus.OK).json(pet);
-    } catch (error) {
-      this.logger.error('Error getting pet by id', error);
-      next(error);
-    }
-  };
+    response
+      .setHeader('Content-Type', 'application/pdf')
+      .setHeader('Content-Disposition', `attachment; filename=pet_${params.id}_report.pdf`)
+      .status(200)
+      .send(pdfBuffer);
+  }
 
-  createPet = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const newPet = await this.petService.addPet(req.body);
-      res.status(HttpStatus.CREATED).json(newPet);
-    } catch (error) {
-      this.logger.error('Error creating pet', error);
-      next(error);
-    }
-  };
+  @Get(':id')
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN, UserRole.CLINIC_USER)
+  async getPetById(@Param() params: PetIdParamDTO, @CurrentUser() user: AuthenticatedUser) {
+    const pet = await this.petService.getPetById(params.id, this.clinicScope(user));
+    if (!pet) throw new NotFoundException('Pet not found');
+    return pet;
+  }
 
-  updatePet = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id;
-      const updatedPet = await this.petService.updatePet(id, req.body);
-      if (!updatedPet) {
-        return res.status(HttpStatus.NOT_FOUND).json({ message: 'Pet not found' });
-      }
-      res.status(HttpStatus.OK).json(updatedPet);
-    } catch (error) {
-      this.logger.error('Error updating pet', error);
-      next(error);
-    }
-  };
+  @Post()
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN)
+  createPet(@Body() petData: RequestPetDTO, @CurrentUser() user: AuthenticatedUser) {
+    return this.petService.addPet(petData as unknown as IPet, this.clinicScope(user));
+  }
 
-  addPet = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const newPet = await this.petService.addPet(req.body);
-      res.status(HttpStatus.CREATED).json(newPet);
-    } catch (error) {
-      this.logger.error('Error adding pet', error);
-      next(error);
-    }
-  };
+  @Put(':id')
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN)
+  async updatePet(
+    @Param() params: PetIdParamDTO,
+    @Body() petData: RequestPetDTO,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    const pet = await this.petService.updatePet(
+      params.id,
+      petData as unknown as IPet,
+      this.clinicScope(user)
+    );
+    if (!pet) throw new NotFoundException('Pet not found');
+    return pet;
+  }
 
-  deletePet = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id;
-      const deletedPet = await this.petService.deletePet(id);
-      if (!deletedPet) {
-        return res.status(HttpStatus.NOT_FOUND).json({ message: 'Pet not found' });
-      }
-      res.status(HttpStatus.OK).json(deletedPet);
-    } catch (error) {
-      this.logger.error('Error deleting pet', error);
-      next(error);
-    }
-  };
-
-  getPetReport = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const id = req.params.id;
-      const pet = await this.petService.getPetById(id);
-
-      if (!pet) {
-        return res.status(HttpStatus.NOT_FOUND).json({ message: 'Pet not found' });
-      }
-
-      const pdfBuffer = await generatePetClinicalHistoryReportPDF(pet);
-
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=pet_${id}_report.pdf`);
-      res.status(HttpStatus.OK).send(pdfBuffer);
-    } catch (error) {
-      this.logger.error('Error generating pet report', error);
-      next(error);
-    }
-  };
+  @Delete(':id')
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN)
+  async deletePet(@Param() params: PetIdParamDTO, @CurrentUser() user: AuthenticatedUser) {
+    const pet = await this.petService.deletePet(params.id, this.clinicScope(user));
+    if (!pet) throw new NotFoundException('Pet not found');
+    return pet;
+  }
 }
-
-export default PetController;

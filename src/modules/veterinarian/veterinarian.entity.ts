@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, Types } from 'mongoose';
+
 import { ISpecialty } from '../specialty/specialty.entity.js';
 
 export interface IVeterinarian extends Document {
@@ -10,9 +11,11 @@ export interface IVeterinarian extends Document {
   email: string;
   experienceYears?: number;
   clinicId: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const veterinarianSchema = new Schema<IVeterinarian>(
+export const veterinarianSchema = new Schema<IVeterinarian>(
   {
     firstName: {
       type: String,
@@ -67,4 +70,3 @@ const Veterinarian = mongoose.model<IVeterinarian>('Veterinarian', veterinarianS
 
 export default Veterinarian;
 export { Veterinarian };
-

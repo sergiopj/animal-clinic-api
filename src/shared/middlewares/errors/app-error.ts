@@ -66,9 +66,7 @@ export class ValidationError extends AppError {
  */
 export class DuplicateKeyError extends AppError {
   constructor(field: string, value?: string) {
-    const message = value 
-      ? `${field} '${value}' already exists`
-      : `Duplicate value for ${field}`;
+    const message = value ? `${field} '${value}' already exists` : `Duplicate value for ${field}`;
     super(409, message);
   }
 }

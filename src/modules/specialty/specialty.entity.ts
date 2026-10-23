@@ -2,11 +2,11 @@ import mongoose, { Document, Schema, Types } from 'mongoose';
 
 export interface ISpecialty extends Document {
   name: string;
-  description?: string; 
+  description?: string;
   veterinarians?: Types.ObjectId[];
 }
 
-const petSchema = new Schema<ISpecialty>(
+export const specialtySchema = new Schema<ISpecialty>(
   {
     name: {
       type: String,
@@ -20,7 +20,7 @@ const petSchema = new Schema<ISpecialty>(
       {
         type: Schema.Types.ObjectId,
         ref: 'Veterinarian',
-        required: true
+        required: true,
       },
     ],
   },
@@ -30,8 +30,7 @@ const petSchema = new Schema<ISpecialty>(
   }
 );
 
-const Specialty = mongoose.model<ISpecialty>('Specialty', petSchema);
+const Specialty = mongoose.model<ISpecialty>('Specialty', specialtySchema);
 
 export default Specialty;
 export { Specialty };
-

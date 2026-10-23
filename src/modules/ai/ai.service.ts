@@ -1,13 +1,16 @@
-import { injectable, inject } from 'tsyringe';
-import { ILogger } from '../../shared/application/logging/logger.interface.js';
+import { Inject, Injectable } from '@nestjs/common';
+
+import type { ILogger } from '../../shared/application/logging/logger.interface.js';
 import { aiConfig } from '../../shared/config/ai.config.js';
-import { AIResponseDTO } from './ai-query.model.js';
+import { LOGGER } from '../../shared/di/injection-tokens.js';
 import type { IPet } from '../pet/pet.entity.js';
 
+import { AIResponseDTO } from './ai-query.model.js';
+
 // <--- 3. THE HEART: Logic for LangChain/Ollama
-@injectable()
+@Injectable()
 export class AIService {
-  constructor(@inject('ILogger') private logger: ILogger) {}
+  constructor(@Inject(LOGGER) private logger: ILogger) {}
 
   /**
    * Analyze pet data with AI using Ollama
@@ -101,7 +104,7 @@ Please provide a detailed analysis and recommendations based on the pet's inform
       this.logger.error('AIService: Failed to call Ollama', error);
 
       // Return mock response for development/testing
-      return this.getMockResponse(prompt);
+      return this.getMockResponse();
     }
   }
 
@@ -126,8 +129,7 @@ Please provide a detailed analysis and recommendations based on the pet's inform
   /**
    * Mock response for development when Ollama is not available
    */
-  private getMockResponse(_prompt: string): string {
+  private getMockResponse(): string {
     return `Based on the provided pet information, the following analysis and recommendations are made`;
   }
 }
-
