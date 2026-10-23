@@ -2,10 +2,10 @@ import 'reflect-metadata';
 import { container } from 'tsyringe';
 import { ILogger } from '../application/logging/logger.interface.js';
 import { Log4jsLogger } from '../application/logging/logger.js';
-import { ClinicRepository } from '../../modules/clinic/clinic.repository.js';
+import { MongoClinicRepositoryAdapter } from '../../modules/clinic/mongo-clinic.repository.adapter.js';
 import { AIService } from '../../modules/ai/ai.service.js';
 import { ClinicService } from '../../modules/clinic/clinic.service.js';
-import { IClinicRepository } from '../../modules/clinic/interfaces/Clinic.interface.js';
+import { ClinicRepositoryPort } from '../../modules/clinic/clinic.repository.port.js';
 import ClinicController from '../../modules/clinic/clinic.controller.js';
 
 /**
@@ -19,8 +19,8 @@ export function configureContainer(): void {
   });
 
   // --- Repositories ---
-  container.register<IClinicRepository>('IClinicRepository', {
-    useClass: ClinicRepository,
+  container.register<ClinicRepositoryPort>('ClinicRepository', {
+    useClass: MongoClinicRepositoryAdapter,
   });
 
   // --- Services ---

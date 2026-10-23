@@ -3,16 +3,24 @@ import { requestValidator } from '../../shared/middlewares/request.validator.js'
 import { ClinicIdParamDTO, RequestClinicDTO } from './dto/Request/request-clinic.dto.js';
 import ClinicController from './clinic.controller.js';
 import { ClinicService } from './clinic.service.js';
-import { ClinicRepository } from './clinic.repository.js';
-import { Log4jsLogger } from '../../shared/application/logging/logger.js';
+import { container } from '../../shared/config/container.config.js';
+import type { ILogger } from '../../shared/application/logging/logger.interface.js';
+import type { ClinicRepositoryPort } from './clinic.repository.port.js';
 
 const router = Router();
 const path = '/clinics';
 
-const logger = new Log4jsLogger();
-const clinicRepository = new ClinicRepository();
-const clinicService = new ClinicService(logger, clinicRepository);
-const clinicController = new ClinicController(clinicService, logger);
+let clinicController: ClinicController | undefined;
+
+const getClinicController = (): ClinicController => {
+    if (!clinicController) {
+        const logger = container.resolve<ILogger>('ILogger');
+        const clinicRepository = container.resolve<ClinicRepositoryPort>('ClinicRepository');
+        clinicController = new ClinicController(new ClinicService(logger, clinicRepository), logger);
+    }
+
+    return clinicController;
+};
 
 /**
  * @swagger
@@ -52,7 +60,7 @@ const clinicController = new ClinicController(clinicService, logger);
  *       500:
  *         description: Internal server error
  */
-router.get(`${path}`, (req, res, next) => clinicController.getClinics(req, res, next));
+router.get(`${path}`, (req, res, next) => getClinicController().getClinics(req, res, next));
 
 /**
  * @swagger
@@ -75,7 +83,7 @@ router.get(`${path}`, (req, res, next) => clinicController.getClinics(req, res, 
  *         description: Internal server error
  */
 // TODO hacer que se envie un email con el PDF adjunto en lugar de descargarlo directamente en otro endpoint se necesita laentidad dueño para eso
-router.get(`${path}/report/:id`, requestValidator(ClinicIdParamDTO, 'params'), (req, res, next) => clinicController.getClinicReport(req, res, next));
+router.get(`${path}/report/:id`, requestValidator(ClinicIdParamDTO, 'params'), (req, res, next) => getClinicController().getClinicReport(req, res, next));
 
 /**
  * @swagger
@@ -96,7 +104,7 @@ router.get(`${path}/report/:id`, requestValidator(ClinicIdParamDTO, 'params'), (
  *       500:
  *         description: Internal server error
  */
-router.get(`${path}/:id`, requestValidator(ClinicIdParamDTO, 'params'), (req, res, next) => clinicController.getClinicById(req, res, next));
+router.get(`${path}/:id`, requestValidator(ClinicIdParamDTO, 'params'), (req, res, next) => getClinicController().getClinicById(req, res, next));
 
 /**
  * @swagger
@@ -116,7 +124,7 @@ router.get(`${path}/:id`, requestValidator(ClinicIdParamDTO, 'params'), (req, re
  *       500:
  *         description: Internal server error
  */
-router.post(`${path}`, requestValidator(RequestClinicDTO, 'body'), (req, res, next) => clinicController.createClinic(req, res, next));
+router.post(`${path}`, requestValidator(RequestClinicDTO, 'body'), (req, res, next) => getClinicController().createClinic(req, res, next));
 
 /**
  * @swagger
@@ -143,7 +151,7 @@ router.post(`${path}`, requestValidator(RequestClinicDTO, 'body'), (req, res, ne
  *       500:
  *         description: Internal server error
  */
-router.put(`${path}/:id`, requestValidator(ClinicIdParamDTO, 'params'), requestValidator(RequestClinicDTO, 'body'), (req, res, next) => clinicController.updateClinic(req, res, next));
+router.put(`${path}/:id`, requestValidator(ClinicIdParamDTO, 'params'), requestValidator(RequestClinicDTO, 'body'), (req, res, next) => getClinicController().updateClinic(req, res, next));
 
 /**
  * @swagger
@@ -164,6 +172,6 @@ router.put(`${path}/:id`, requestValidator(ClinicIdParamDTO, 'params'), requestV
  *       500:
  *         description: Internal server error
  */
-router.delete(`${path}/:id`, requestValidator(ClinicIdParamDTO, 'params'), (req, res, next) => clinicController.deleteClinic(req, res, next));
+router.delete(`${path}/:id`, requestValidator(ClinicIdParamDTO, 'params'), (req, res, next) => getClinicController().deleteClinic(req, res, next));
 
 export default router;

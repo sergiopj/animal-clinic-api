@@ -47,33 +47,26 @@ npm start
 ## 🏗️ Architecture
 
 ```
-┌─────────────┐
-│   Client    │
-└──────┬──────┘
-       │ HTTP
-       ↓
-┌─────────────┐
-│   Routes    │ ← Define endpoints
-└──────┬──────┘
-       ↓
-┌─────────────┐
-│ Controllers │ ← Handle request/response
-└──────┬──────┘
-       ↓
-┌─────────────┐
-│  Services   │ ← Business logic
-└──────┬──────┘
-       ↓
-┌─────────────┐
-│   Models    │ ← Mongoose schemas
-└──────┬──────┘
-       ↓
-┌─────────────┐
-│   MongoDB   │
-└─────────────┘
+                         ┌──────────────────────────────┐
+                         │ Express routes + controllers │
+                         │       Primary adapter        │
+                         └──────────────┬───────────────┘
+                                        ↓
+┌─────────────┐    ┌──────────────────────────┐    ┌──────────────────────────┐
+│   Client    │ →  │ ClinicService (use cases)│ →  │ ClinicRepositoryPort     │
+└─────────────┘    └──────────────────────────┘    └──────────────┬───────────┘
+                                                                  ↑
+                                      ┌───────────────────────────┴────────────┐
+                                      │ MongoClinicRepositoryAdapter           │
+                                      │ Secondary adapter                     │
+                                      └───────────────────────────┬────────────┘
+                                                                  ↓
+                                                              MongoDB
 ```
 
-**Pattern**: Layered architecture with separation of concerns.
+**Pattern**: Hexagonal architecture (ports and adapters) foundation. The clinic service depends on a repository port, and the MongoDB adapter is selected by the dependency-injection container.
+
+**Current boundary**: The clinic port still exposes `IClinic` from the Mongoose entity. Replacing MongoDB does not require changing the service implementation, but fully isolating the domain from Mongoose also requires introducing persistence-independent domain types and mapping them in the adapter.
 
 ---
 
@@ -233,15 +226,14 @@ src/
 │   ├── clinic/              # Clinic Module
 │   │   ├── clinic.controller.ts
 │   │   ├── clinic.service.ts
-│   │   ├── clinic.repository.ts
+│   │   ├── clinic.repository.port.ts
+│   │   ├── mongo-clinic.repository.adapter.ts
 │   │   ├── clinic.entity.ts     # MongoDB schema
 │   │   ├── clinic.model.ts      # API DTO
 │   │   ├── clinic.router.ts
 │   │   ├── dto/
 │   │   │   ├── Request/         # Input DTOs
 │   │   │   └── Response/        # Output DTOs
-│   │   ├── interfaces/
-│   │   │   └── Clinic.interface.ts
 │   │   ├── property-validator/
 │   │   └── index.ts             # Module exports
 │   │

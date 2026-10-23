@@ -1,19 +1,19 @@
-import {ILogger} from '../../shared/application/logging/logger.interface.js';
-import { IClinicRepository, ClinicFilters } from './interfaces/Clinic.interface.js';
+import { ILogger } from '../../shared/application/logging/logger.interface.js';
+import { ClinicFilters, ClinicRepositoryPort } from './clinic.repository.port.js';
 import type { IClinic } from './clinic.entity.js';
 import { ResponseClinicDTO } from './dto/Response/response-clinic.dto.js';
 import { ClinicQueryParams } from './dto/Request/query-clinic.dto.js';
-import { 
-    PaginatedResponseDTO, 
-    CursorPaginatedResponseDTO 
+import {
+    PaginatedResponseDTO,
+    CursorPaginatedResponseDTO
 } from '../../shared/utils/pagination/paginated-response.dto.js';
 import { PaginationParams, CursorPaginationParams } from '../../shared/utils/pagination/pagination.util.js';
 
 export class ClinicService {
     constructor(
         private logger: ILogger,
-        private clinicRepository: IClinicRepository
-    ) {}
+        private clinicRepository: ClinicRepositoryPort
+    ) { }
 
     private toResponseDTO(clinic: IClinic): ResponseClinicDTO {
         return {
@@ -30,7 +30,7 @@ export class ClinicService {
             createdAt: clinic.createdAt || new Date(),
             updatedAt: clinic.updatedAt || new Date()
         };
-    }  
+    }
 
     public async getClinicById(id: string): Promise<ResponseClinicDTO | null> {
         this.logger.info(`ClinicService: Fetching clinic with id: ${id}`);
@@ -67,26 +67,26 @@ export class ClinicService {
 
     public async getPetsByClinicId(clinicId: string): Promise<any[]> {
         this.logger.info(`ClinicService: Fetching pets for clinic with id: ${clinicId}`);
-        return this.clinicRepository.findPetsByClinicId(clinicId);  
+        return this.clinicRepository.findPetsByClinicId(clinicId);
     }
 
     private extractFiltersFromQuery(query: ClinicQueryParams): ClinicFilters {
         const filters: ClinicFilters = {};
-        
+
         if (query.name) filters.name = query.name as string;
         if (query.city) filters.city = query.city as string;
         if (query.country) filters.country = query.country as string;
         if (query.isActive !== undefined) filters.isActive = query.isActive === 'true';
-        
+
         return filters;
     }
-  
+
     public async getClinics(
         query: ClinicQueryParams
     ): Promise<PaginatedResponseDTO<ResponseClinicDTO> | CursorPaginatedResponseDTO<ResponseClinicDTO>> {
         const filters = this.extractFiltersFromQuery(query);
         const hasCursor = query.cursor !== undefined;
-        
+
         if (hasCursor) {
             this.logger.info('ClinicService: Using cursor-based pagination');
             return this.getCursorPaginatedClinics(query, filters);
@@ -106,11 +106,11 @@ export class ClinicService {
             sortBy: query.sortBy || 'createdAt',
             sortOrder: query.sortOrder === 'asc' ? 'asc' : 'desc'
         };
-        
+
         this.logger.info('ClinicService: Fetching clinics with pagination', { params, filters });
-        
+
         const result = await this.clinicRepository.findWithPagination(params, filters);
-        
+
         return {
             data: result.data.map(clinic => this.toResponseDTO(clinic)),
             pagination: result.pagination
@@ -127,16 +127,16 @@ export class ClinicService {
             sortBy: query.sortBy || '_id',
             sortOrder: query.sortOrder === 'asc' ? 'asc' : 'desc'
         };
-        
+
         this.logger.info('ClinicService: Fetching clinics with cursor pagination', { params, filters });
-        
+
         const result = await this.clinicRepository.findWithCursorPagination(params, filters);
-        
+
         let total: number | undefined;
         if (params.cursor === undefined || params.cursor === '') {
             total = await this.clinicRepository.countDocuments(filters);
         }
-        
+
         return {
             data: result.data.map(clinic => this.toResponseDTO(clinic)),
             pagination: {

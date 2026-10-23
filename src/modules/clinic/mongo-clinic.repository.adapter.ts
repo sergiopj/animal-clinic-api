@@ -4,39 +4,39 @@ import Pet from '../pet/pet.entity.js';
 import type { IClinic } from './clinic.entity.js';
 import type { IVeterinarian } from '../veterinarian/veterinarian.entity.js';
 import type { IPet } from '../pet/pet.entity.js';
-import { IClinicRepository, ClinicFilters } from './interfaces/Clinic.interface.js';
-import { 
-    PaginationParams, 
-    CursorPaginationParams, 
-    PaginatedResponse, 
+import { ClinicRepositoryPort, ClinicFilters } from './clinic.repository.port.js';
+import {
+    PaginationParams,
+    CursorPaginationParams,
+    PaginatedResponse,
     CursorPaginatedResponse,
     calculateSkip,
     calculateTotalPages
 } from '../../shared/utils/pagination/pagination.util.js';
 
-export class ClinicRepository implements IClinicRepository {
-    
+export class MongoClinicRepositoryAdapter implements ClinicRepositoryPort {
+
     private buildFilterQuery(filters?: ClinicFilters): any {
         const query: any = {};
-        
+
         if (!filters) return query;
-        
+
         if (filters.name) {
             query.name = { $regex: filters.name, $options: 'i' }; // Case-insensitive search
         }
-        
+
         if (filters.city) {
             query['address.city'] = { $regex: filters.city, $options: 'i' };
         }
-        
+
         if (filters.country) {
             query['address.country'] = { $regex: filters.country, $options: 'i' };
         }
-        
+
         if (filters.isActive !== undefined) {
             query.isActive = filters.isActive;
         }
-        
+
         return query;
     }
 
@@ -50,11 +50,11 @@ export class ClinicRepository implements IClinicRepository {
         filters?: ClinicFilters
     ): Promise<PaginatedResponse<IClinic>> {
         const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = params;
-        
+
         const query = this.buildFilterQuery(filters);
         const skip = calculateSkip(page, limit);
         const sortDirection = sortOrder === 'asc' ? 1 : -1;
-        
+
         // Execute queries in parallel
         const [data, total] = await Promise.all([
             Clinic.find(query)
@@ -66,9 +66,9 @@ export class ClinicRepository implements IClinicRepository {
                 .exec(),
             Clinic.countDocuments(query).exec()
         ]);
-        
+
         const totalPages = calculateTotalPages(total, limit);
-        
+
         return {
             data: data as IClinic[],
             pagination: {
@@ -87,18 +87,18 @@ export class ClinicRepository implements IClinicRepository {
         filters?: ClinicFilters
     ): Promise<CursorPaginatedResponse<IClinic>> {
         const { cursor, limit = 10, sortBy = '_id', sortOrder = 'desc' } = params;
-        
+
         const query = this.buildFilterQuery(filters);
         const sortDirection = sortOrder === 'asc' ? 1 : -1;
-        
+
         // Add cursor condition to query
         if (cursor) {
-            const cursorCondition = sortOrder === 'asc' 
-                ? { $gt: cursor } 
+            const cursorCondition = sortOrder === 'asc'
+                ? { $gt: cursor }
                 : { $lt: cursor };
             query[sortBy] = cursorCondition;
         }
-        
+
         // Fetch limit + 1 to determine if there's a next page
         const data = await Clinic.find(query)
             .sort({ [sortBy]: sortDirection })
@@ -106,16 +106,16 @@ export class ClinicRepository implements IClinicRepository {
             .populate('veterinarians')
             .populate('pets')
             .exec();
-        
+
         const hasNextPage = data.length > limit;
         const items = hasNextPage ? data.slice(0, limit) : data;
-        
+
         const nextCursor = hasNextPage && items.length > 0
             ? (items[items.length - 1] as any)[sortBy]?.toString() || null
             : null;
-        
+
         const previousCursor = cursor || null;
-        
+
         return {
             data: items as IClinic[],
             pagination: {
@@ -126,7 +126,7 @@ export class ClinicRepository implements IClinicRepository {
             }
         };
     }
-    
+
     public async findAll(): Promise<IClinic[]> {
         const clinics = await Clinic.find()
             .populate('veterinarians')
