@@ -33,6 +33,12 @@ docker compose up --build
 
 Stop the services with `Ctrl+C` or `docker compose down`.
 
+The API connects to the Ollama service over Docker's internal network, so port `11434` is not published on the host. Download the configured default model before requesting AI care reports:
+
+```bash
+docker compose exec ollama ollama pull llama2
+```
+
 ## URLs
 
 - Swagger UI: http://localhost:3000/api-docs
@@ -67,6 +73,30 @@ Sign in at `POST /api/auth/login` and include the returned token in the `Authori
 ## AI-assisted pet care report
 
 `POST /api/pets/:id/care-report` returns a PDF containing the pet's calculated age, breed, registered medical history, and Ollama-generated care recommendations and suggested clinic follow-up. It is available to authenticated clinic users for pets in their clinic and to platform administrators. The report is informational and does not replace a veterinarian's assessment. Ollama must be reachable at `OLLAMA_HOST` and have the configured model available; the endpoint returns `503` if generation fails.
+
+## Pet clinical records
+
+Clinic administrators can record, update, and delete clinical visits for pets in their clinic. Clinic users can read the records. The veterinarian must belong to the same clinic as the pet.
+
+| Method | Endpoint | Access |
+| --- | --- | --- |
+| `GET` | `/api/pets/:id/medical-reports` | All authenticated roles, scoped to the caller's clinic |
+| `POST` | `/api/pets/:id/medical-reports` | Platform admin or clinic admin |
+| `PUT` | `/api/pets/:id/medical-reports/:reportId` | Platform admin or clinic admin |
+| `DELETE` | `/api/pets/:id/medical-reports/:reportId` | Platform admin or clinic admin |
+
+Create a clinical record with JSON such as:
+
+```json
+{
+  "veterinarianId": "64a000000000000000000003",
+  "diagnosis": "Artritis",
+  "treatment": "Seguimiento veterinario",
+  "date": "2026-10-23T10:00:00.000Z"
+}
+```
+
+The `date` is optional; when omitted, the API records the current date and time. These records are used in the clinical-history PDF and as context for AI care reports.
 
 ## Useful commands
 

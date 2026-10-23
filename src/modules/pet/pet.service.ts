@@ -1,8 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 
 import type { ILogger } from '../../shared/application/logging/logger.interface.js';
-import { LOGGER, PET_REPORT, PET_REPOSITORY } from '../../shared/di/injection-tokens.js';
+import {
+  LOGGER,
+  MEDICAL_REPORT_REPOSITORY,
+  PET_REPORT,
+  PET_REPOSITORY,
+} from '../../shared/di/injection-tokens.js';
 import {
   PaginatedResponseDTO,
   CursorPaginatedResponseDTO,
@@ -12,6 +17,12 @@ import {
   CursorPaginationParams,
 } from '../../shared/utils/pagination/pagination.util.js';
 import { AIService } from '../ai/ai.service.js';
+import type { ResponseMedicalReportDTO } from '../medical-report/dto/Response/response-medical-report.dto.js';
+import type { IMedicalReport } from '../medical-report/medical-report.entity.js';
+import type {
+  MedicalReportRepositoryPort,
+  MedicalReportWriteData,
+} from '../medical-report/medical-report.repository.port.js';
 
 import { PetQueryParams } from './dto/Request/query-pet.dto.js';
 import { ResponsePetDTO } from './dto/Response/response-pet.dto.js';
@@ -26,8 +37,106 @@ export class PetService {
     @Inject(LOGGER) private logger: ILogger,
     @Inject(PET_REPOSITORY) private petRepository: PetRepositoryPort,
     @Inject(PET_REPORT) private petReport: PetReportPort,
+    @Inject(MEDICAL_REPORT_REPOSITORY)
+    private medicalReportRepository: MedicalReportRepositoryPort,
     private readonly aiService: AIService
   ) {}
+
+  private toMedicalReportDTO(report: IMedicalReport): ResponseMedicalReportDTO {
+    if (report.veterinarianId instanceof Types.ObjectId) {
+      throw new Error('Medical report veterinarian was not populated');
+    }
+
+    const veterinarian = report.veterinarianId;
+    return {
+      _id: report._id.toString(),
+      petId: report.petId.toString(),
+      clinicId: report.clinicId.toString(),
+      veterinarianId: {
+        _id: veterinarian._id.toString(),
+        firstName: veterinarian.firstName,
+        lastName: veterinarian.lastName,
+        licenseNumber: veterinarian.licenseNumber,
+        email: veterinarian.email,
+        phone: veterinarian.phone,
+      },
+      diagnosis: report.diagnosis,
+      treatment: report.treatment,
+      date: report.date,
+    };
+  }
+
+  private async getMedicalReportScope(petId: string, clinicId?: string) {
+    return this.petRepository.findById(petId, clinicId);
+  }
+
+  public async getMedicalReports(
+    petId: string,
+    clinicId?: string
+  ): Promise<ResponseMedicalReportDTO[] | null> {
+    const pet = await this.getMedicalReportScope(petId, clinicId);
+    if (!pet) return null;
+    const reports = await this.medicalReportRepository.findByPetId(pet._id, pet.clinicId);
+    return reports.map((report) => this.toMedicalReportDTO(report));
+  }
+
+  public async createMedicalReport(
+    petId: string,
+    data: Omit<MedicalReportWriteData, 'date'> & { date?: Date },
+    clinicId?: string
+  ): Promise<ResponseMedicalReportDTO | null> {
+    const pet = await this.getMedicalReportScope(petId, clinicId);
+    if (!pet) return null;
+    if (
+      !(await this.medicalReportRepository.veterinarianBelongsToClinic(
+        data.veterinarianId,
+        pet.clinicId
+      ))
+    ) {
+      throw new BadRequestException('Veterinarian must belong to the pet clinic');
+    }
+
+    const report = await this.medicalReportRepository.create(pet._id, pet.clinicId, {
+      ...data,
+      date: data.date ?? new Date(),
+    });
+    return this.toMedicalReportDTO(report);
+  }
+
+  public async updateMedicalReport(
+    petId: string,
+    reportId: string,
+    data: Omit<MedicalReportWriteData, 'date'> & { date?: Date },
+    clinicId?: string
+  ): Promise<ResponseMedicalReportDTO | null> {
+    const pet = await this.getMedicalReportScope(petId, clinicId);
+    if (!pet) return null;
+    if (
+      !(await this.medicalReportRepository.veterinarianBelongsToClinic(
+        data.veterinarianId,
+        pet.clinicId
+      ))
+    ) {
+      throw new BadRequestException('Veterinarian must belong to the pet clinic');
+    }
+
+    const report = await this.medicalReportRepository.update(reportId, pet._id, pet.clinicId, {
+      ...data,
+      date: data.date ?? new Date(),
+    });
+    return report ? this.toMedicalReportDTO(report) : null;
+  }
+
+  public async deleteMedicalReport(
+    petId: string,
+    reportId: string,
+    clinicId?: string
+  ): Promise<ResponseMedicalReportDTO | null> {
+    const pet = await this.getMedicalReportScope(petId, clinicId);
+    if (!pet) return null;
+    const report = await this.medicalReportRepository.delete(reportId, pet._id, pet.clinicId);
+    return report ? this.toMedicalReportDTO(report) : null;
+  }
 
   private toResponseDTO(pet: IPet): ResponsePetDTO {
     return {

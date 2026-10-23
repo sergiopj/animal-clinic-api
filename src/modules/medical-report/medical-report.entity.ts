@@ -17,19 +17,16 @@ export const medicalReportSchema = new Schema<IMedicalReport>(
       type: Schema.Types.ObjectId,
       ref: 'Pet',
       required: true,
-      unique: true,
     },
     veterinarianId: {
       type: Schema.Types.ObjectId,
       ref: 'Veterinarian',
       required: true,
-      unique: true,
     },
     clinicId: {
       type: Schema.Types.ObjectId,
       ref: 'Clinic',
       required: true,
-      unique: true,
     },
     diagnosis: {
       type: String,

@@ -18,6 +18,10 @@ import type { AuthenticatedUser } from '../../shared/auth/auth.types.js';
 import { UserRole } from '../../shared/auth/auth.types.js';
 import { CurrentUser } from '../../shared/auth/current-user.decorator.js';
 import { Roles } from '../../shared/auth/roles.decorator.js';
+import {
+  MedicalReportIdParamDTO,
+  RequestMedicalReportDTO,
+} from '../medical-report/dto/Request/request-medical-report.dto.js';
 
 import { PetQueryParams } from './dto/Request/query-pet.dto.js';
 import { PetIdParamDTO, RequestPetDTO } from './dto/Request/request-pet.dto.js';
@@ -79,6 +83,72 @@ export class PetController {
       .setHeader('Content-Disposition', `attachment; filename=pet_${params.id}_care_report.pdf`)
       .status(200)
       .send(pdfBuffer);
+  }
+
+  @Get(':id/medical-reports')
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN, UserRole.CLINIC_USER)
+  @ApiOperation({ summary: 'List a pet clinical records' })
+  async getMedicalReports(@Param() params: PetIdParamDTO, @CurrentUser() user: AuthenticatedUser) {
+    const reports = await this.petService.getMedicalReports(params.id, this.clinicScope(user));
+    if (!reports) throw new NotFoundException('Pet not found');
+    return reports;
+  }
+
+  @Post(':id/medical-reports')
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN)
+  @ApiOperation({ summary: 'Add a clinical record to a pet' })
+  async createMedicalReport(
+    @Param() params: PetIdParamDTO,
+    @Body() data: RequestMedicalReportDTO,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    const report = await this.petService.createMedicalReport(
+      params.id,
+      {
+        ...data,
+        date: data.date ? new Date(data.date) : undefined,
+      },
+      this.clinicScope(user)
+    );
+    if (!report) throw new NotFoundException('Pet not found');
+    return report;
+  }
+
+  @Put(':id/medical-reports/:reportId')
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN)
+  @ApiOperation({ summary: 'Update a pet clinical record' })
+  async updateMedicalReport(
+    @Param() params: MedicalReportIdParamDTO,
+    @Body() data: RequestMedicalReportDTO,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    const report = await this.petService.updateMedicalReport(
+      params.id,
+      params.reportId,
+      {
+        ...data,
+        date: data.date ? new Date(data.date) : undefined,
+      },
+      this.clinicScope(user)
+    );
+    if (!report) throw new NotFoundException('Pet or clinical record not found');
+    return report;
+  }
+
+  @Delete(':id/medical-reports/:reportId')
+  @Roles(UserRole.PLATFORM_ADMIN, UserRole.CLINIC_ADMIN)
+  @ApiOperation({ summary: 'Delete a pet clinical record' })
+  async deleteMedicalReport(
+    @Param() params: MedicalReportIdParamDTO,
+    @CurrentUser() user: AuthenticatedUser
+  ) {
+    const report = await this.petService.deleteMedicalReport(
+      params.id,
+      params.reportId,
+      this.clinicScope(user)
+    );
+    if (!report) throw new NotFoundException('Pet or clinical record not found');
+    return report;
   }
 
   @Get(':id')

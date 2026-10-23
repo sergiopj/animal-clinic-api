@@ -6,6 +6,7 @@ import { AppModule } from '../src/app.module.js';
 import { AuthController } from '../src/modules/auth/auth.controller.js';
 import { ClinicController } from '../src/modules/clinic/clinic.controller.js';
 import { HealthController } from '../src/modules/health/health.controller.js';
+import type { IMedicalReport } from '../src/modules/medical-report/medical-report.entity.js';
 import { MongoPetRepositoryAdapter } from '../src/modules/pet/mongo-pet.repository.adapter.js';
 import type { PetReportPort } from '../src/modules/pet/pet-report.port.js';
 import { PetController } from '../src/modules/pet/pet.controller.js';
@@ -85,11 +86,15 @@ describe('role access policy', () => {
       PetController.prototype.getPets,
       PetController.prototype.getPetById,
       PetController.prototype.getPetReport,
+      PetController.prototype.getMedicalReports,
     ];
     const writeMethods = [
       PetController.prototype.createPet,
       PetController.prototype.updatePet,
       PetController.prototype.deletePet,
+      PetController.prototype.createMedicalReport,
+      PetController.prototype.updateMedicalReport,
+      PetController.prototype.deleteMedicalReport,
     ];
 
     for (const handler of readMethods) {
@@ -130,6 +135,10 @@ describe('clinic-scoped pet access', () => {
     getPetById: jest.fn(),
     generateClinicalHistoryReport: jest.fn(),
     generateCareReport: jest.fn(),
+    getMedicalReports: jest.fn(),
+    createMedicalReport: jest.fn(),
+    updateMedicalReport: jest.fn(),
+    deleteMedicalReport: jest.fn(),
   };
   const controller = new PetController(service as unknown as PetService);
 
@@ -138,6 +147,10 @@ describe('clinic-scoped pet access', () => {
     service.getPetById.mockResolvedValue({});
     service.generateClinicalHistoryReport.mockResolvedValue(Buffer.from('report'));
     service.generateCareReport.mockResolvedValue(Buffer.from('care report'));
+    service.getMedicalReports.mockResolvedValue([]);
+    service.createMedicalReport.mockResolvedValue({});
+    service.updateMedicalReport.mockResolvedValue({});
+    service.deleteMedicalReport.mockResolvedValue({});
   });
 
   it('scopes pet listings and individual pet reads to the caller clinic', async () => {
@@ -179,6 +192,40 @@ describe('clinic-scoped pet access', () => {
     expect(response.send).toHaveBeenCalledWith(Buffer.from('care report'));
   });
 
+  it('scopes clinical record reads and writes to the caller clinic', async () => {
+    const user = userFor(UserRole.CLINIC_ADMIN, anotherClinicId);
+    const petParams = { id: '64a000000000000000000020' };
+    const reportParams = { ...petParams, reportId: '64a000000000000000000030' };
+    const body = {
+      veterinarianId: '64a000000000000000000040',
+      diagnosis: 'Artritis',
+      treatment: 'Seguimiento veterinario',
+    };
+
+    await controller.getMedicalReports(petParams, user);
+    await controller.createMedicalReport(petParams, body, user);
+    await controller.updateMedicalReport(reportParams, body, user);
+    await controller.deleteMedicalReport(reportParams, user);
+
+    expect(service.getMedicalReports).toHaveBeenCalledWith(petParams.id, anotherClinicId);
+    expect(service.createMedicalReport).toHaveBeenCalledWith(
+      petParams.id,
+      expect.objectContaining(body),
+      anotherClinicId
+    );
+    expect(service.updateMedicalReport).toHaveBeenCalledWith(
+      petParams.id,
+      reportParams.reportId,
+      expect.objectContaining(body),
+      anotherClinicId
+    );
+    expect(service.deleteMedicalReport).toHaveBeenCalledWith(
+      petParams.id,
+      reportParams.reportId,
+      anotherClinicId
+    );
+  });
+
   it('lets the platform admin query all clinics without a clinic filter', async () => {
     const admin = userFor(UserRole.PLATFORM_ADMIN);
     await controller.getPets({}, admin);
@@ -196,27 +243,39 @@ describe('clinic-scoped pet access', () => {
 });
 
 describe('Mongo pet repository clinic filters', () => {
-  const petQuery = () => ({
+  const petQuery = (result: unknown = []) => ({
     sort: jest.fn().mockReturnThis(),
     skip: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
     populate: jest.fn().mockReturnThis(),
-    exec: jest.fn().mockResolvedValue([]),
+    exec: jest.fn().mockResolvedValue(result),
   });
 
   const makeRepository = () => {
     const query = petQuery();
+    const medicalReportQuery = petQuery();
+    const petId = '64a000000000000000000020';
+    const pet = { _id: petId, clinicId };
     const model = {
       find: jest.fn(() => query),
-      findOne: jest.fn(() => query),
-      findOneAndUpdate: jest.fn(() => query),
-      findOneAndDelete: jest.fn(() => query),
+      findOne: jest.fn(() => petQuery(pet)),
+      findOneAndUpdate: jest.fn(() => petQuery(pet)),
+      findOneAndDelete: jest.fn(() => petQuery(pet)),
       countDocuments: jest.fn(() => ({ exec: jest.fn().mockResolvedValue(0) })),
     };
+    const medicalReportModel = {
+      find: jest.fn(() => medicalReportQuery),
+      deleteMany: jest.fn(() => petQuery()),
+    };
     return {
-      repository: new MongoPetRepositoryAdapter(model as unknown as Model<IPet>),
+      repository: new MongoPetRepositoryAdapter(
+        model as unknown as Model<IPet>,
+        medicalReportModel as unknown as Model<IMedicalReport>
+      ),
       model,
       query,
+      medicalReportModel,
+      medicalReportQuery,
     };
   };
 
@@ -231,7 +290,7 @@ describe('Mongo pet repository clinic filters', () => {
   });
 
   it('applies clinic scope to individual, history, update, and delete queries', async () => {
-    const { repository, model, query } = makeRepository();
+    const { repository, model, medicalReportModel, medicalReportQuery } = makeRepository();
     const petId = '64a000000000000000000020';
     const scopedIdQuery = expect.objectContaining({ _id: petId, clinicId });
 
@@ -242,13 +301,15 @@ describe('Mongo pet repository clinic filters', () => {
 
     expect(model.findOne).toHaveBeenNthCalledWith(1, scopedIdQuery);
     expect(model.findOne).toHaveBeenNthCalledWith(2, scopedIdQuery);
-    expect(query.populate).toHaveBeenCalledWith({
-      path: 'medicalReport',
-      match: { clinicId },
-      populate: { path: 'veterinarianId', model: 'Veterinarian' },
+    expect(medicalReportModel.find).toHaveBeenCalledWith({ petId, clinicId });
+    expect(medicalReportQuery.populate).toHaveBeenCalledWith({
+      path: 'veterinarianId',
+      model: 'Veterinarian',
     });
+    expect(medicalReportQuery.sort).toHaveBeenCalledWith({ date: -1, _id: -1 });
     expect(model.findOneAndUpdate).toHaveBeenCalledWith(scopedIdQuery, {}, { new: true });
     expect(model.findOneAndDelete).toHaveBeenCalledWith(scopedIdQuery);
+    expect(medicalReportModel.deleteMany).toHaveBeenCalledWith({ petId, clinicId });
   });
 
   it('does not restrict platform-admin queries to one clinic', async () => {
@@ -278,6 +339,7 @@ describe('cursor pagination clinic filters', () => {
       { info: jest.fn() } as unknown as ILogger,
       repository as unknown as PetRepositoryPort,
       { generateReport: jest.fn() } as unknown as PetReportPort,
+      {} as never,
       { analyzePet: jest.fn() } as never
     );
 

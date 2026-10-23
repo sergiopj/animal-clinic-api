@@ -10,13 +10,17 @@ import {
   calculateSkip,
   calculateTotalPages,
 } from '../../shared/utils/pagination/pagination.util.js';
+import type { IMedicalReport } from '../medical-report/medical-report.entity.js';
 
 import type { IPet } from './pet.entity.js';
 import type { PetFilters, PetRepositoryPort } from './pet.repository.port.js';
 
 @Injectable()
 export class MongoPetRepositoryAdapter implements PetRepositoryPort {
-  constructor(@InjectModel('Pet') private readonly petModel: Model<IPet>) {}
+  constructor(
+    @InjectModel('Pet') private readonly petModel: Model<IPet>,
+    @InjectModel('MedicalReport') private readonly medicalReportModel: Model<IMedicalReport>
+  ) {}
 
   private buildFilterQuery(filters?: PetFilters): FilterQuery<IPet> {
     const query: FilterQuery<IPet> = {};
@@ -133,17 +137,14 @@ export class MongoPetRepositoryAdapter implements PetRepositoryPort {
   }
 
   public async findByIdAndPopulate(id: string, clinicId?: string): Promise<IPet | null> {
-    const pet = await this.petModel
-      .findOne({ _id: id, ...(clinicId ? { clinicId } : {}) })
-      .populate({
-        path: 'medicalReport',
-        ...(clinicId ? { match: { clinicId } } : {}),
-        populate: {
-          path: 'veterinarianId',
-          model: 'Veterinarian',
-        },
-      })
+    const pet = await this.petModel.findOne({ _id: id, ...(clinicId ? { clinicId } : {}) }).exec();
+    if (!pet) return null;
+    const medicalReports = await this.medicalReportModel
+      .find({ petId: pet._id, clinicId: pet.clinicId })
+      .populate({ path: 'veterinarianId', model: 'Veterinarian' })
+      .sort({ date: -1, _id: -1 })
       .exec();
+    pet.medicalReport = medicalReports;
     return pet as IPet | null;
   }
 
@@ -167,6 +168,11 @@ export class MongoPetRepositoryAdapter implements PetRepositoryPort {
         ...(clinicId ? { clinicId } : {}),
       })
       .exec();
+    if (deletedPet) {
+      await this.medicalReportModel
+        .deleteMany({ petId: deletedPet._id, clinicId: deletedPet.clinicId })
+        .exec();
+    }
     return deletedPet as IPet | null;
   }
 

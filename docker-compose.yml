@@ -7,6 +7,8 @@ services:
     env_file: .env
     environment:
       - NODE_ENV=development
+      - DB_HOST=db
+      - OLLAMA_HOST=http://ollama:11434
     ports:
       - "3000:3000"
     volumes:
@@ -28,12 +30,10 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  # Servicio de IA (Ollama) - Disponible pero no usado de momento
+  # Ollama is accessed by the API through the internal Compose network.
   ollama:
     image: ollama/ollama:latest
     container_name: animal-clinic-ollama
-    ports:
-      - "11434:11434"
     volumes:
       - ollama-data:/root/.ollama
     environment:
